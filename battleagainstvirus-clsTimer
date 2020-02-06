@@ -1,0 +1,80 @@
+Option Explicit
+
+#If Win64 Then
+
+    'Code is running in 64-bit Office
+    
+    Private Declare PtrSafe Function SetTimer Lib "user32" ( _
+    ByVal hwnd As LongPtr, _
+    ByVal nIDEvent As LongPtr, _
+    ByVal uElapse As Long, _
+    ByVal lpTimerFunc As LongPtr) As LongPtr
+    
+    Private Declare PtrSafe Function KillTimer Lib "user32" ( _
+    ByVal hwnd As LongPtr, _
+    ByVal nIDEvent As LongPtr) As Long
+
+#Else
+
+    'Code is running in 32-bit Office
+    
+    Private Declare Function SetTimer Lib "user32" ( _
+    ByVal hwnd As Long, _
+    ByVal nIDEvent As Long, _
+    ByVal uElapse As Long, _
+    ByVal lpTimerFunc As Long) As Long
+    
+    Private Declare Function KillTimer Lib "user32" ( _
+    ByVal hwnd As Long, _
+    ByVal nIDEvent As Long) As Long
+
+#End If
+
+'the ID of the timer that we start
+
+Private pGameTimerID As Long
+
+'the time in milliseconds between each tick
+
+Private pGameTimerInterval As Double
+
+Private Sub Class_Initialize()
+    'set the timer interval in milliseconds
+    
+    pGameTimerInterval = 50
+End Sub
+
+Public Sub StartTimer()
+
+    'starts the timer calling UpdateAndDrawGame
+    
+    pGameTimerID = _
+    SetTimer(0, 0, pGameTimerInterval, AddressOf UpdateAndDrawGame)
+
+End Sub
+
+Private Sub Class_Terminate()
+    If pGameTimerID <> 0 Then
+    
+        'stops the timer whose ID we stored earlier
+        
+        KillTimer 0, pGameTimerID
+        
+        pGameTimerID = 0
+
+    End If
+End Sub
+
+Public Property Let TimerInterval(Value As Double)
+
+    pGameTimerInterval = Value
+
+End Property
+
+Public Property Get TimerInterval() As Double
+
+    TimerInterval = pGameTimerInterval
+
+End Property
+
+
