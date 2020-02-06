@@ -1,8 +1,12 @@
 Private GameTimer As clsTimer
-Dim Sn As clsSnake
+Dim Citizen As clsPerson
+Dim City As clsCity
 'Private GameSheet As clsGameSheet
 
 Public Sub InitialiseGame()
+
+    Set City = New clsCity
+    Set Citizen = New clsPerson
 
     'Called once when game first starts
     
