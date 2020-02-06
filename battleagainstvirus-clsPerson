@@ -79,17 +79,30 @@ Private Sub Class_Initialize()
     
 End Sub
 
+Public Sub Update()
+    Dim x As Integer
+    For x = 0 To UBound(Persons)
+        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
+        Persons(x).PositionX = Persons(x).PositionX + Int(RandNorm(0, 1) * 10)
+        Persons(x).PositionY = Persons(x).PositionY + Int(RandNorm(0, 1) * 10)
+        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+    Next
+End Sub
+
 Private Sub PersonBirth()
 
     Dim x As Integer
     Dim upperbound As Integer
     Dim lowerbound As Integer
     
-    ReDim Preserve Persons(0 To NumberOfPopulation)
-    Set BirthRange = Range("BirthRange")
-    upperbound = BirthRange.Columns.Count
-    lowerbound = BirthRange.Rows.Count
+    ReDim Preserve Persons(0 To CityPopulation)
     
+    For x = 0 To CityPopulation
+        Persons(x).PositionX = Int((CityEndX - 50 - CityStartX + 1) * Rnd + CityStartX + 20)
+        Persons(x).PositionY = Int((CityEndY - 50 - CityStartY + 1) * Rnd + CityStartY + 20)
+        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+        'Debug.Print Persons(x).PositionY, Persons(x).PositionX
+    Next
     
 End Sub
 Private Sub SnakeBirth()
