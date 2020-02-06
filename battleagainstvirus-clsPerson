@@ -1,0 +1,350 @@
+Option Explicit
+
+Private Type PersonType
+    PositionX As Integer
+    PositionY As Integer
+    PreviousPositionX As Integer
+    previousPositionY As Integer
+End Type
+
+Private Persons() As PersonType
+
+'Private DirectionX As Integer
+
+'Private DirectionY As Integer
+
+Private FoodX As Integer
+
+Private FoodY As Integer
+
+Private PlayRange As Range
+
+Private BirthRange As Range
+
+Private Const SnakeLength As Integer = 20
+
+Private BirdImage As Range
+
+Private BirdHeight As Integer
+
+Private BirdWidth As Integer
+
+Private BirdCell As Range
+
+Private BirdPreviousRectangle As Range
+
+Private BirdVerticalMovement As Long
+
+Private Const Gravity As Byte = 2
+
+Private Const FlapHeight As Integer = -16
+
+Private Const DiveDepth As Integer = 16
+
+Private FloorRange As Range
+
+Private PreviousUpKeyState As Integer
+
+Private PreviousDownKeyState As Integer
+
+Private PreviousLeftKeyState As Integer
+
+Private PreviousRightKeyState As Integer
+
+'Private pGameSheet As clsGameSheet
+
+
+
+Private Sub Class_Initialize()
+    'store info about bird image
+    
+    Do
+        DirectionX = Int((3 - 1 + 1) * Rnd) - 1
+        DirectionY = Int((3 - 1 + 1) * Rnd) - 1
+    Loop Until (DirectionX * DirectionY = 0) And (DirectionX + DirectionY <> 0)
+    
+    SnakeBirth
+    
+    FoodGenerate
+    
+    'store the initial key state of Up and Down
+    
+    PreviousUpKeyState = GetAsyncKeyState(vbKeyUp)
+    
+    PreviousDownKeyState = GetAsyncKeyState(vbKeyDown)
+    
+    PreviousLeftKeyState = GetAsyncKeyState(vbKeyLeft)
+    
+    PreviousRightKeyState = GetAsyncKeyState(vbKeyRight)
+    
+End Sub
+
+Private Sub PersonBirth()
+
+    Dim x As Integer
+    Dim upperbound As Integer
+    Dim lowerbound As Integer
+    
+    ReDim Preserve Persons(0 To NumberOfPopulation)
+    Set BirthRange = Range("BirthRange")
+    upperbound = BirthRange.Columns.Count
+    lowerbound = BirthRange.Rows.Count
+    
+    
+End Sub
+Private Sub SnakeBirth()
+
+    Dim x As Integer
+    Dim upperbound As Integer
+    Dim lowerbound As Integer
+    
+    ReDim Preserve Snake(0 To SnakeLength)
+    
+    Set PlayRange = Range("PlayRange")
+    Set BirthRange = Range("BirthRange")
+    upperbound = (PlayRange.Columns.Count - BirthRange.Columns.Count) / 2 + BirthRange.Columns.Count + GameGroundY
+    lowerbound = (PlayRange.Columns.Count - BirthRange.Columns.Count) / 2 + GameGroundY
+    Snake(0).PositionY = Int((upperbound - lowerbound + 1) * Rnd + lowerbound)
+    Snake(0).previousPositionY = Snake(0).PositionY
+    'Debug.Print upperbound, lowerbound
+    upperbound = (PlayRange.Rows.Count - BirthRange.Rows.Count) / 2 + BirthRange.Rows.Count + GameGroundx
+    lowerbound = (PlayRange.Rows.Count - BirthRange.Rows.Count) / 2 + GameGroundx
+    Snake(0).PositionX = Int((upperbound - lowerbound + 1) * Rnd + lowerbound)
+    Snake(0).PreviousPositionX = Snake(0).PositionX
+    'Debug.Print upperbound, lowerbound, (PlayRange.Rows.Count + BirthRange.Rows.Count) / 2, PlayRange.Rows.Count, BirthRange.Rows.Count
+    For x = 1 To SnakeLength
+        Snake(x).PositionX = Snake(x - 1).PositionX - DirectionX
+        Snake(x).PositionY = Snake(x - 1).PositionY - DirectionY
+        Snake(x).PreviousPositionX = Snake(x).PositionX
+        Snake(x).previousPositionY = Snake(x).PositionY
+    Next
+    
+End Sub
+
+Public Sub FoodGenerate()
+
+    Dim x As Integer
+    Dim upperboundx As Integer
+    Dim lowerboundx As Integer
+    Dim upperboundy As Integer
+    Dim lowerboundy As Integer
+
+    'ReDim Preserve Snake(0 To SnakeLength)
+    
+    Set PlayRange = Range("PlayRange")
+    Set BirthRange = Range("BirthRange")
+    
+    upperboundy = (PlayRange.Columns.Count - BirthRange.Columns.Count) / 2 + BirthRange.Columns.Count + GameGroundY
+    lowerboundy = (PlayRange.Columns.Count - BirthRange.Columns.Count) / 2 + GameGroundY
+    
+    upperboundx = (PlayRange.Rows.Count - BirthRange.Rows.Count) / 2 + BirthRange.Rows.Count + GameGroundx
+    lowerboundx = (PlayRange.Rows.Count - BirthRange.Rows.Count) / 2 + GameGroundx
+    
+    Do
+        FoodX = Int((upperboundx - lowerboundx + 1) * Rnd + lowerboundx)
+        FoodY = Int((upperboundy - lowerboundy + 1) * Rnd + lowerboundy)
+    Loop Until CheckFoodBirthLocation(FoodX, FoodY)
+
+
+End Sub
+
+Private Function CheckFoodBirthLocation(x As Integer, Y As Integer) As Boolean
+    Dim i As Integer
+    CheckFoodBirthLocation = True
+    For i = 0 To UBound(Snake)
+        If x = Snake(i).PositionX And Y = Snake(i).PositionY Then
+            CheckFoodBirthLocation = False
+            Exit For
+        End If
+    Next
+End Function
+
+
+Private Sub CheckKeys()
+
+    If GetAsyncKeyState(vbKeyUp) <> 0 And _
+    PreviousUpKeyState = 0 Then upkey
+    
+    If GetAsyncKeyState(vbKeyDown) <> 0 And _
+    PreviousDownKeyState = 0 Then downkey
+    
+    If GetAsyncKeyState(vbKeyLeft) <> 0 And _
+    PreviousLeftKeyState = 0 Then leftkey
+    
+    If GetAsyncKeyState(vbKeyRight) <> 0 And _
+    PreviousRightKeyState = 0 Then rightkey
+    
+    PreviousUpKeyState = GetAsyncKeyState(vbKeyUp)
+    
+    PreviousDownKeyState = GetAsyncKeyState(vbKeyDown)
+    
+    PreviousLeftKeyState = GetAsyncKeyState(vbKeyLeft)
+    
+    PreviousRightKeyState = GetAsyncKeyState(vbKeyRight)
+    
+    'Debug.Print GetAsyncKeyState(vbKeyUp), GetAsyncKeyState(vbKeyDown), GetAsyncKeyState(vbKeyLeft), GetAsyncKeyState(vbKeyRight)
+
+End Sub
+
+Sub rightkey()
+    If DirectionX = -1 And DirectionY = 0 Then
+        DirectionX = 0
+        DirectionY = 1
+    ElseIf DirectionX = 0 And DirectionY = 1 Then
+        DirectionX = 0
+        DirectionY = 1
+    ElseIf DirectionX = 1 And DirectionY = 0 Then
+        DirectionX = 0
+        DirectionY = 1
+    ElseIf DirectionX = 0 And DirectionY = -1 Then
+        DirectionX = 0
+        DirectionY = -1
+    End If
+End Sub
+Sub leftkey()
+    If DirectionX = -1 And DirectionY = 0 Then
+        DirectionX = 0
+        DirectionY = -1
+    ElseIf DirectionX = 0 And DirectionY = 1 Then
+        DirectionX = 0
+        DirectionY = 1
+    ElseIf DirectionX = 1 And DirectionY = 0 Then
+        DirectionX = 0
+        DirectionY = -1
+    ElseIf DirectionX = 0 And DirectionY = -1 Then
+        DirectionX = 0
+        DirectionY = -1
+    End If
+End Sub
+Sub upkey()
+    If DirectionX = -1 And DirectionY = 0 Then
+        DirectionX = -1
+        DirectionY = 0
+    ElseIf DirectionX = 0 And DirectionY = 1 Then
+        DirectionX = -1
+        DirectionY = 0
+    ElseIf DirectionX = 1 And DirectionY = 0 Then
+        DirectionX = 1
+        DirectionY = 0
+    ElseIf DirectionX = 0 And DirectionY = -1 Then
+        DirectionX = -1
+        DirectionY = 0
+    End If
+End Sub
+Sub downkey()
+    If DirectionX = -1 And DirectionY = 0 Then
+        DirectionX = -1
+        DirectionY = 0
+    ElseIf DirectionX = 0 And DirectionY = 1 Then
+        DirectionX = 1
+        DirectionY = 0
+    ElseIf DirectionX = 1 And DirectionY = 0 Then
+        DirectionX = 1
+        DirectionY = 0
+    ElseIf DirectionX = 0 And DirectionY = -1 Then
+        DirectionX = 1
+        DirectionY = 0
+    End If
+End Sub
+
+Public Sub Update()
+
+    Dim x As Integer
+    
+    'If GetAsyncKeyState(vbKeyUp) <> 0 Then Flap
+
+    'If GetAsyncKeyState(vbKeyDown) <> 0 Then Dive
+    'On Error GoTo errhandler
+    
+    'CheckKeys
+    
+    For x = 0 To UBound(Snake)
+        If x <> 0 Then
+            Snake(x).PreviousPositionX = Snake(x).PositionX
+            Snake(x).previousPositionY = Snake(x).PositionY
+            Snake(x).PositionX = Snake(x - 1).PreviousPositionX
+            Snake(x).PositionY = Snake(x - 1).previousPositionY
+        Else
+            Snake(x).PreviousPositionX = Snake(x).PositionX
+            Snake(x).previousPositionY = Snake(x).PositionY
+            Snake(x).PositionX = Snake(x).PositionX + DirectionX
+            Snake(x).PositionY = Snake(x).PositionY + DirectionY
+        End If
+    Next
+    
+    DetectFood
+    'DetectingCollision
+    
+End Sub
+
+Public Sub Draw()
+    'clear the previous image
+    Dim x As Integer
+    
+    For x = 0 To UBound(Snake)
+        'Debug.Print Snake(x).PositionX, Snake(x).PositionY, Snake(x).PreviousPositionX, Snake(x).previousPositionY
+        shGame.Cells(Snake(x).PreviousPositionX, Snake(x).previousPositionY).ClearFormats
+        'shGame.Cells(Snake(x).PreviousPositionX, Snake(x).previousPositionY).Interior.Color = GameColour.gcWhite
+        shGame.Cells(Snake(x).PositionX, Snake(x).PositionY).Interior.Color = GameColour.gcBrown
+        'shGame.Cells(Snake(x).PreviousPositionX, Snake(x).previousPositionY).ClearFormats
+    Next
+    
+    shGame.Cells(FoodX, FoodY).Interior.Color = GameColour.gcGrassGreen
+    'BirdPreviousRectangle.Interior.Color = _
+    GameColour.gcSkyBlue
+    
+    'copy the image to the new cell
+    
+    'BirdImage.Copy BirdCell
+End Sub
+
+Private Sub Flap()
+
+    BirdVerticalMovement = FlapHeight
+
+End Sub
+
+Private Sub Dive()
+
+    BirdVerticalMovement = DiveDepth
+
+End Sub
+
+Public Function DetectingCollision() As Boolean
+    If shGame.Cells(Snake(0).PositionX, Snake(0).PositionY).Interior.Color = GameColour.gcBlack Then
+        DetectingCollision = True
+    Else
+        DetectingCollision = False
+    End If
+End Function
+
+Private Sub DetectFood()
+    Dim i As Integer
+    i = UBound(Snake)
+    If Snake(0).PositionX = FoodX And Snake(0).PositionY = FoodY Then
+        ReDim Preserve Snake(0 To i + 1)
+        Snake(i + 1).PositionX = Snake(i).PreviousPositionX
+        Snake(i + 1).PositionY = Snake(i).previousPositionY
+        Snake(i + 1).PreviousPositionX = Snake(i).PreviousPositionX
+        Snake(i + 1).previousPositionY = Snake(i).previousPositionY
+        FoodGenerate
+    End If
+End Sub
+
+'Public Property Set GameSheet(Value As clsGameSheet)
+
+'    Set pGameSheet = Value
+    
+'    Set BirdCell = _
+'    pGameSheet.GameRange.Cells(Int(pGameSheet.GameHeight / 2), 40)
+    
+'    BirdImage.Copy BirdCell
+    
+'    Set FloorRange = pGameSheet.FloorRange.Cells(1, 1)
+
+'End Property
+
+
+
+
+
