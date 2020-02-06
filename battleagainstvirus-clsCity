@@ -1,0 +1,30 @@
+Option Explicit
+
+Private Sub Class_Initialize()
+    drawCity
+End Sub
+
+Private Sub drawCity()
+
+    Dim x As Integer
+    Dim y As Integer
+    
+    For x = CityStartX To CityEndX
+        shCity.Cells(CityStartY, x).Interior.Color = GameColour.gcblack
+        
+    Next
+    
+    For x = CityStartX To CityEndX
+        shCity.Cells(CityEndY, x).Interior.Color = GameColour.gcblack
+        
+    Next
+    
+    For y = CityStartY To CityEndY
+        shCity.Cells(y, CityStartX).Interior.Color = GameColour.gcblack
+    Next
+    
+    For y = CityStartY To CityEndY
+        shCity.Cells(y, CityEndX).Interior.Color = GameColour.gcblack
+    Next
+    
+End Sub
