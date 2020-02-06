@@ -25,13 +25,25 @@ Option Explicit
 
 #End If
 
+Public Const CityPopulation As Integer = 4000
+
+Public Const CityStartX As Integer = 50
+Public Const CityEndX As Integer = 1050
+Public Const CityStartY As Integer = 100
+Public Const CityEndY As Integer = 900
+
+
 Public Enum GameColour
 
     gcBrown = 128
     gcLightBrown = 8761087
     gcSkyBlue = 13408512
     gcGrassGreen = 32768
+    gcblack = 1
 
 End Enum
 
+Public Function RandNorm(meanVal As Double, Stdev As Double)
+    RandNorm = WorksheetFunction.NormInv(Rnd, meanVal, Stdev)
+End Function
 
