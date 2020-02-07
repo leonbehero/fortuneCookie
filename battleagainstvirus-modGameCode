@@ -1,5 +1,5 @@
 Private GameTimer As clsTimer
-Dim Citizen As clsPerson
+Dim Citizen As clsCitizen
 Dim City As clsCity
 'Private GameSheet As clsGameSheet
 
@@ -8,33 +8,10 @@ Public Sub InitialiseGame()
 'Application.ScreenUpdating = False
 
     Set City = New clsCity
-    Set Citizen = New clsPerson
+    Set Citizen = New clsCitizen
     DayCount = 0
-    'Citizen.Draw
-        
-    'City.drawCity
-
-    'Called once when game first starts
-                            
-    'Used to set starting parameters
-    
-    'Begins the game timer
-                                              
-    'SetGameKeys
-    
-    'Set GameSheet = New clsGameSheet
-    
-    'GameSheet.CreateGameSheet
-        
-    'Set Sn = New clsPerson
-
-    'Sn.Draw
     
     SetGameKeys
-    
-    'Set Bird.GameSheet = GameSheet
-    'Bird.GameSheet.CreateGameSheet
-    'Set Bird.GameSheet = GameSheet
     
     Set GameTimer = New clsTimer
     
@@ -59,6 +36,11 @@ Public Sub TerminateGame()
     ResetKeys
 
 End Sub
+Public Sub updateanddraw()
+        Citizen.Update
+        Citizen.DrawPerson
+        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = DayCount
+End Sub
 Public Sub UpdateAndDrawGame()
 
     'Called by the SetTimer function
@@ -79,11 +61,15 @@ Public Sub UpdateAndDrawGame()
     
     End If
     Debug.Print TimerCount
-    If TimerCount Mod 10 = 0 Then
+    If TimerCount Mod 5 = 0 Then
         DayCount = DayCount + 1
         Citizen.Update
         Citizen.DrawPerson
-        shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
+        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = DayCount
+    End If
+    
+    If TimerCount Mod 24 = 0 Then
+        DayCount = DayCount + 1
     End If
     
     'If TimerCount Mod 10 = 0 Then
@@ -139,6 +125,15 @@ Private Sub ResetKeys()
 
 End Sub
 
+Sub testingloop()
+Dim x As Integer
+
+    Do
+        x = x + 1
+        Debug.Print x
+        
+    Loop While x < 3
+End Sub
 
 
 Public Sub Pause(sngSecs As Single)
@@ -176,10 +171,10 @@ Public Sub TestPause()
 End Sub
 
 Sub StartTimer()
-    initialSnake
+    
     TimerActive = True
     'Debug.Print TimerActive
-    Call moveSnake
+    
 End Sub
 
 Private Sub Start_Timer()
@@ -214,208 +209,9 @@ End Sub
 '    End If
 'End Sub
 
-Private Sub initialSnake()
-    Dim rpx As Integer
-    Dim rpy As Integer
 
-    'ReDim Preserve Sn(0 To 2)
-    'Do wh
-    Do
-        Sn(0).dx = Int((3 - 1 + 1) * Rnd) - 1
-        Sn(0).dy = Int((3 - 1 + 1) * Rnd) - 1
-    Loop Until (Sn(0).dx * Sn(0).dy = 0) And (Sn(0).dx + Sn(0).dy <> 0)
-    'Debug.Print snhead.direction
-    Sn(0).py = Int((40 - 9 + 1) * Rnd + 9)
-    'sn(0).py = Int((64 - 12 + 1) * Rnd + 12)
-    'sn(0).px = Int((35 - 14 + 1) * Rnd + 14)
-    Sn(0).px = Int((31 - 13 + 1) * Rnd + 13)
-    'Debug.Print sn(0).dx, sn(0).dy
-    ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 1
-    Sn(1).dx = Sn(0).dx
-    Sn(1).dy = Sn(0).dy
-    Sn(1).px = Sn(0).px - Sn(0).dx
-    Sn(1).py = Sn(0).py - Sn(0).dy
-    ActiveSheet.Cells(Sn(1).px, Sn(1).py).Interior.ColorIndex = 1
-    Sn(2).dx = Sn(1).dx
-    Sn(2).dy = Sn(1).dy
-    Sn(2).px = Sn(1).px - Sn(1).dx
-    Sn(2).py = Sn(1).py - Sn(1).dy
-    ActiveSheet.Cells(Sn(2).px, Sn(2).py).Interior.ColorIndex = 1
-    'ReDim Preserve wa(0 To 52)
-    
-    Do
-        rpy = Int((40 - 9 + 1) * Rnd + 9)
-        rpx = Int((31 - 13 + 1) * Rnd + 13)
-    Loop Until ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex <> 1
-    ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex = 12
-    
-    'timeactive = True
-    'sn(0).px
-End Sub
-Private Sub detectWall()
-    If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 16 Then
-        timeactive = False
-    End If
-End Sub
-Private Sub moveSnake()
-    'Dim i As Integer
-    'Debug.Print UBound(sn)
-    'Debug.Print "timeactive", timeactive
-    'ReDim Preserve sn(0 To 0)
-    Dim n As Integer
-    Dim rpx As Integer
-    Dim rpy As Integer
-    
-    timeactive = True
-    If timeactive <> False Then
-            'For i = 0 To UBound(Sn)
-        Sn(i).ox = Sn(i).px
-        Sn(i).oy = Sn(i).py
-        If i = 0 Then
-            Sn(i).px = Sn(i).px + Sn(i).dx
-            Sn(i).py = Sn(i).py + Sn(i).dy
-            If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 1 Then
-                timeactive = False
-                Exit Sub
-            End If
 
-            If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 12 Then
-                'n = UBound(Sn) + 1
-                Debug.Print n
-                'ReDim Preserve Sn(o To n)
-                Sn(n).dx = Sn(n - 1).dx
-                Sn(n).dy = Sn(n - 1).dy
-                Sn(n).px = Sn(n - 1).px
-                Sn(n).py = Sn(n - 1).py
-                Do
-                    rpy = Int((64 - 12 + 1) * Rnd + 12)
-                    rpx = Int((35 - 14 + 1) * Rnd + 14)
-                Loop Until ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex <> 1
-                ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex = 12
-            End If
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            Else
-                Sn(i).px = Sn(i - 1).ox
-                Sn(i).py = Sn(i - 1).oy
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            End If
-        'Next
 
-        Call Sleep(250)
-        'For i = 0 To UBound(Sn)
-        Sn(i).ox = Sn(i).px
-        Sn(i).oy = Sn(i).py
-        If i = 0 Then
-            Sn(i).px = Sn(i).px + Sn(i).dx
-            Sn(i).py = Sn(i).py + Sn(i).dy
-            If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 1 Then
-                timeactive = False
-                Exit Sub
-            End If
-
-            If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 12 Then
-                'n = UBound(Sn) + 1
-                Debug.Print n
-                'ReDim Preserve Sn(o To n)
-                'Sn(n).dx = Sn(n - 1).dx
-                'Sn(n).dy = Sn(n - 1).dy
-                'Sn(n).px = Sn(n - 1).px
-                'Sn(n).py = Sn(n - 1).py
-                Do
-                    rpy = Int((64 - 12 + 1) * Rnd + 12)
-                    rpx = Int((35 - 14 + 1) * Rnd + 14)
-                Loop Until ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex <> 1
-                ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex = 12
-            End If
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            Else
-                Sn(i).px = Sn(i - 1).ox
-                Sn(i).py = Sn(i - 1).oy
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            End If
-        'Next
-        
-        Call Sleep(250)
-        
-        'For i = 0 To UBound(Sn)
-        'Sn(i).ox = Sn(i).px
-        'Sn(i).oy = Sn(i).py
-        If i = 0 Then
-            'n(i).px = Sn(i).px + Sn(i).dx
-            'Sn(i).py = Sn(i).py + Sn(i).dy
-            If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 1 Then
-                timeactive = False
-                Exit Sub
-            End If
-
-            If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 12 Then
-                'n = UBound(Sn) + 1
-                Debug.Print n
-                'ReDim Preserve Sn(o To n)
-                'Sn(n).dx = Sn(n - 1).dx
-                'n(n).dy = Sn(n - 1).dy
-                'Sn(n).px = Sn(n - 1).px
-                'Sn(n).py = Sn(n - 1).py
-                Do
-                    rpy = Int((64 - 12 + 1) * Rnd + 12)
-                    rpx = Int((35 - 14 + 1) * Rnd + 14)
-                Loop Until ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex <> 1
-                ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex = 12
-            End If
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            Else
-                Sn(i).px = Sn(i - 1).ox
-                Sn(i).py = Sn(i - 1).oy
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            End If
-        'Next
-
-        Call Sleep(250)
-        
-        'For i = 0 To UBound(Sn)
-        'Sn(i).ox = Sn(i).px
-        'Sn(i).oy = Sn(i).py
-        'If i = 0 Then
-          '  Sn(i).px = Sn(i).px + Sn(i).dx
-          '  Sn(i).py = Sn(i).py + Sn(i).dy
-          '  If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 1 Then
-          '      timeactive = False
-          '      Exit Sub
-         '   End If
-
-          '  If ActiveSheet.Cells(Sn(0).px, Sn(0).py).Interior.ColorIndex = 12 Then
-         '       n = UBound(Sn) + 1
-          '      Debug.Print n
-           '     ReDim Preserve Sn(o To n)
-         '       Sn(n).dx = Sn(n - 1).dx
-            '    Sn(n).dy = Sn(n - 1).dy
-            '    Sn(n).px = Sn(n - 1).px
-            '    Sn(n).py = Sn(n - 1).py
-                Do
-                    rpy = Int((64 - 12 + 1) * Rnd + 12)
-                    rpx = Int((35 - 14 + 1) * Rnd + 14)
-                Loop Until ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex <> 1
-                ActiveSheet.Cells(rpx, rpy).Interior.ColorIndex = 12
-            End If
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-            'Else
-           '    Sn(i).px = Sn(i - 1).ox
-            '    Sn(i).py = Sn(i - 1).oy
-                ActiveSheet.Cells(Sn(i).px, Sn(i).py).Interior.ColorIndex = 1
-                ActiveSheet.Cells(Sn(i).ox, Sn(i).oy).Interior.ColorIndex = 2
-           ' End If
-        'Next
-
-        Application.OnTime Now() + TimeValue("00:00:01"), "moveSnake"
-    'End If
-End Sub
 
 Sub drawSnake()
 
@@ -493,7 +289,4 @@ Sub testrandom()
     
 End Sub
 
-Function RandNorm(meanVal As Double, Stdev As Double)
-    RandNorm = WorksheetFunction.NormInv(Rnd, meanVal, Stdev)
-End Function
 
