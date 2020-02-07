@@ -80,12 +80,13 @@ Private Sub Class_Initialize()
 End Sub
 
 Public Sub Update()
+    Application.ScreenUpdating = False
     Dim x As Integer
     For x = 0 To UBound(Persons)
         shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
         Persons(x).PositionX = Persons(x).PositionX + Int(RandNorm(0, 1) * 10)
         Persons(x).PositionY = Persons(x).PositionY + Int(RandNorm(0, 1) * 10)
-        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+        'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
     Next
 End Sub
 
@@ -94,7 +95,7 @@ Private Sub PersonBirth()
     Dim x As Integer
     Dim upperbound As Integer
     Dim lowerbound As Integer
-    
+    Application.ScreenUpdating = False
     ReDim Preserve Persons(0 To CityPopulation)
     
     For x = 0 To CityPopulation
@@ -104,6 +105,15 @@ Private Sub PersonBirth()
         'Debug.Print Persons(x).PositionY, Persons(x).PositionX
     Next
     
+End Sub
+Public Sub DrawPerson()
+    Dim x As Integer
+    For x = 0 To UBound(Persons)
+        'Debug.Print Persons(x).PositionX, Persons(x).PositionY
+        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+    Next
+
+
 End Sub
 Private Sub SnakeBirth()
 
