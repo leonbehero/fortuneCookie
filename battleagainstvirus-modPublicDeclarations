@@ -32,6 +32,8 @@ Public Const CityEndX As Integer = 1050
 Public Const CityStartY As Integer = 100
 Public Const CityEndY As Integer = 900
 
+Public TimerCount As Long
+Public DayCount As Long
 
 Public Enum GameColour
 
