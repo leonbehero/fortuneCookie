@@ -5,24 +5,30 @@ Dim City As clsCity
 
 Public Sub InitialiseGame()
 
+'Application.ScreenUpdating = False
+
     Set City = New clsCity
     Set Citizen = New clsPerson
+    DayCount = 0
+    'Citizen.Draw
+        
+    'City.drawCity
 
     'Called once when game first starts
-    
+                            
     'Used to set starting parameters
     
     'Begins the game timer
-    
+                                              
     'SetGameKeys
     
     'Set GameSheet = New clsGameSheet
     
     'GameSheet.CreateGameSheet
-    
-    Set Sn = New clsSnake
-    
-    Sn.Draw
+        
+    'Set Sn = New clsPerson
+
+    'Sn.Draw
     
     SetGameKeys
     
@@ -44,7 +50,7 @@ Public Sub TerminateGame()
     
     Set GameTimer = Nothing
     
-    Set Sn = Nothing
+    Set Citizen = Nothing
     
     'shMenu.Activate
     
@@ -53,7 +59,6 @@ Public Sub TerminateGame()
     ResetKeys
 
 End Sub
-
 Public Sub UpdateAndDrawGame()
 
     'Called by the SetTimer function
@@ -63,6 +68,8 @@ Public Sub UpdateAndDrawGame()
     'Updates all game logic
     
     'Draws all game objects
+    'Debug.Print GetAsyncKeyState(vbKeyTab)
+    TimerCount = TimerCount + 1
     
     If GetAsyncKeyState(vbKeyTab) <> 0 Then
     
@@ -71,17 +78,35 @@ Public Sub UpdateAndDrawGame()
         Exit Sub
     
     End If
-    
-    Sn.Update
-    
-    If Sn.DetectingCollision Then
-        TerminateGame
-        Exit Sub
+    Debug.Print TimerCount
+    If TimerCount Mod 10 = 0 Then
+        DayCount = DayCount + 1
+        Citizen.Update
+        Citizen.DrawPerson
+        shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
     End If
-    Sn.Draw
+    
+    'If TimerCount Mod 10 = 0 Then
+    '    shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
+    'End If
+    'If TimerCount Mod 20 = 0 Then
+    '    DayCount = DayCount + 1
+    '    shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
+    'End If
 
 End Sub
+Sub getcolor()
+    
+    Debug.Print Range("a1").Interior.ColorIndex
+    
+End Sub
+Sub testtextframe()
+'shCity.ShapeRange(1).TextFrame2.TextRange.Characters.Text = "Infection Number:"
+Debug.Print shCity.Shapes(1).Name
 
+shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = "Infection Number:"
+
+End Sub
 Private Sub SetGameKeys()
 
     Application.OnKey "{ESC}", ""
