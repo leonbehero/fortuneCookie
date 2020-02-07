@@ -32,6 +32,7 @@ Public Const CityEndX As Integer = 1050
 Public Const CityStartY As Integer = 100
 Public Const CityEndY As Integer = 900
 
+Public MoveIntention As Single
 Public TimerCount As Long
 Public DayCount As Long
 
@@ -41,11 +42,12 @@ Public Enum GameColour
     gcLightBrown = 8761087
     gcSkyBlue = 13408512
     gcGrassGreen = 32768
-    gcblack = 1
+    gcBlack = 1
 
 End Enum
 
 Public Function RandNorm(meanVal As Double, Stdev As Double)
     RandNorm = WorksheetFunction.NormInv(Rnd, meanVal, Stdev)
 End Function
+
 
