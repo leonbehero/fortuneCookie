@@ -1,157 +1,171 @@
 Option Explicit
 
-Private Type PersonType
-    PositionX As Integer
-    PositionY As Integer
-    PreviousPositionX As Integer
-    previousPositionY As Integer
-    Status As Integer
-    CoolingPeriod As Integer
-    MoveIntention As Single
-End Type
-
-Private Persons() As PersonType
-
-'Private DirectionX As Integer
-
-'Private DirectionY As Integer
-
-Private FoodX As Integer
-
-Private FoodY As Integer
-
-Private PlayRange As Range
-
-Private BirthRange As Range
-
-Private Const SnakeLength As Integer = 20
-
-Private BirdImage As Range
-
-Private BirdHeight As Integer
-
-Private BirdWidth As Integer
-
-Private BirdCell As Range
-
-Private BirdPreviousRectangle As Range
-
-Private BirdVerticalMovement As Long
-
-Private Const Gravity As Byte = 2
-
-Private Const FlapHeight As Integer = -16
-
-Private Const DiveDepth As Integer = 16
-
-Private FloorRange As Range
-
-Private PreviousUpKeyState As Integer
-
-Private PreviousDownKeyState As Integer
-
-Private PreviousLeftKeyState As Integer
-
-Private PreviousRightKeyState As Integer
-
-'Private pGameSheet As clsGameSheet
-
-
-
 Private Sub Class_Initialize()
     'store info about bird image
     PersonBirth
-
+    InitiliseInfection
+    MoveIntention = Range("moveintention").Value
+    ChanceofInfection = Range("chanceofinfection").Value
+    
     
 End Sub
 
-Public Sub Update()
-    Application.ScreenUpdating = False
+Public Sub update()
+    'Application.ScreenUpdating = False
     Dim x As Integer
+    Dim UX As Integer
+    Dim UY As Integer
+    
     For x = 0 To UBound(Persons)
-        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
-        Persons(x).PreviousPositionX = Persons(x).PositionX
-        Persons(x).previousPositionY = Persons(x).PositionY
-        Do
-            Persons(x).PositionX = Persons(x).PreviousPositionX
-            Persons(x).PositionY = Persons(x).previousPositionY
-            Persons(x).PositionX = Persons(x).PositionX + Int(RandNorm(0, 1) * 10)
-            Persons(x).PositionY = Persons(x).PositionY + Int(RandNorm(0, 1) * 10)
-        Loop While DetectingCollisionWall(Persons(x).PositionX, Persons(x).PositionY)
+        If getRandomMoveintention And Persons(x).Status <> 3 Then
+            shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
+            'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX).ClearFormats
+            'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX + 1).ClearFormats
+            'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX + 1).ClearFormats
+            UX = Persons(x).PositionX
+            UY = Persons(x).PositionY
+            Do
+                Persons(x).PositionX = UX
+                Persons(x).PositionY = UY
+                Persons(x).PositionX = Persons(x).PositionX + Int(RandNorm(0, 1) * 10)
+                Persons(x).PositionY = Persons(x).PositionY + Int(RandNorm(0, 1) * 10)
+            Loop While DetectingCollisionWall(Persons(x).PositionX, Persons(x).PositionY)
+        End If
         'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+    Next
+End Sub
+Private Function getRandomMoveintention() As Boolean
+    If RandNorm(0, 1) + MoveIntention > 0 Then
+        getRandomMoveintention = True
+    Else
+        getRandomMoveintention = False
+    End If
+End Function
+Private Function getChanceofInfection() As Boolean
+    If RandNorm(0, 1) + ChanceofInfection > 0 Then
+        getChanceofInfection = True
+    Else
+        getChanceofInfection = False
+    End If
+End Function
+Public Sub CalculateInfection()
+    Dim i As Integer
+    Dim x As Integer
+    Dim d As Single
+    'n = UBound(InfectedPersonsID)
+    For i = 0 To CityPopulation
+        'Debug.Print "stats", Persons(i).Status
+        If Persons(i).Status = 0 Then
+            If getChanceofInfection Then
+                For x = 0 To UBound(InfectedPersonsID)
+                    If Persons(InfectedPersonsID(x)).Status = 1 Or Persons(InfectedPersonsID(x)).Status = 2 Then
+                        d = GetDistant(Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY)
+                        'Debug.Print "distant:", InfectionNumber, d, Persons(i).PositionX, Persons(i).PositionY, Persons(x).PositionX, Persons(x).PositionY
+                        If d < SafeDist Then
+                            'Debug.Print d
+                            Persons(i).Status = 1
+                            Persons(i).InfectedStartTime = TimerCount
+                            Persons(i).CoolingPeriod = Int(Abs(RandNorm(0, 1) * AVGShadowTime))
+                            InfectionNumber = InfectionNumber + 1
+                            ReDim Preserve InfectedPersonsID(0 To InfectionNumber)
+                            InfectedPersonsID(InfectionNumber) = i
+                            ExposedNumber = ExposedNumber + 1
+                            Exit For
+                        End If
+                    End If
+                Next
+            End If
+        End If
+    Next
+    
+    For i = 0 To InfectionNumber
+        If Persons(InfectedPersonsID(i)).Status = 1 Then
+            If TimerCount - Persons(InfectedPersonsID(i)).InfectedStartTime >= Persons(InfectedPersonsID(i)).CoolingPeriod Then
+                Persons(InfectedPersonsID(i)).Status = 2
+                ExposedNumber = ExposedNumber - 1
+            End If
+        End If
     Next
 End Sub
 
 Private Sub PersonBirth()
 
     Dim x As Integer
-    Dim upperbound As Integer
-    Dim lowerbound As Integer
-    Application.ScreenUpdating = False
+
+    'Application.ScreenUpdating = False
     ReDim Preserve Persons(0 To CityPopulation)
     
     For x = 0 To CityPopulation
 
         Persons(x).PositionX = Int((CityEndX - 50 - CityStartX + 1) * Rnd + CityStartX + 20)
         Persons(x).PositionY = Int((CityEndY - 50 - CityStartY + 1) * Rnd + CityStartY + 20)
+        Persons(x).Status = 0
 
-        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+        'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
         'Debug.Print Persons(x).PositionY, Persons(x).PositionX
     Next
     
 End Sub
+Private Sub InitiliseInfection()
+    
+    Dim i As Integer
+    Dim x As Integer
+    ExposedNumber = 0
+    For i = 0 To firstPatch
+        ReDim Preserve InfectedPersonsID(0 To i)
+        Do
+            x = Int((CityPopulation - 0 - 1) * Rnd + 1)
+            
+        Loop While Persons(x).Status = 1
+        Persons(x).Status = 1
+        ExposedNumber = ExposedNumber + 1
+        Persons(x).InfectedStartTime = TimerCount
+        Persons(x).CoolingPeriod = Int(Abs(RandNorm(0, 1) * AVGShadowTime))
+        Debug.Print Persons(x).CoolingPeriod
+        InfectedPersonsID(i) = x
+    Next
+    InfectionNumber = firstPatch
+End Sub
+    
 Public Sub DrawPerson()
     Dim x As Integer
     For x = 0 To UBound(Persons)
         'Debug.Print Persons(x).PositionX, Persons(x).PositionY
-        shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+        Select Case Persons(x).Status
+            Case 0
+                'shCity.Range(shCity.Cells(Persons(x).PositionY, Persons(x).PositionX), shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX) + 1).Interior.Color = GameColour.gcHealth
+                shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcHealth
+                'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX + 1).Interior.Color = GameColour.gcHealth
+                'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX).Interior.Color = GameColour.gcHealth
+                'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX + 1).Interior.Color = GameColour.gcHealth
+            Case 1
+                shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcInfected
+                'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX + 1).Interior.Color = GameColour.gcInfected
+                'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX).Interior.Color = GameColour.gcInfected
+                'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX + 1).Interior.Color = GameColour.gcInfected
+            Case 2
+                shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcSick
+                'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX + 1).Interior.Color = GameColour.gcSick
+                'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX).Interior.Color = GameColour.gcSick
+                'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX + 1).Interior.Color = GameColour.gcSick
+            End Select
     Next
 
-
 End Sub
 
-
-
-
-Private Sub CheckKeys()
-
-    If GetAsyncKeyState(vbKeyUp) <> 0 And _
-    PreviousUpKeyState = 0 Then upkey
+Sub testdistant()
     
-    If GetAsyncKeyState(vbKeyDown) <> 0 And _
-    PreviousDownKeyState = 0 Then downkey
-    
-    If GetAsyncKeyState(vbKeyLeft) <> 0 And _
-    PreviousLeftKeyState = 0 Then leftkey
-    
-    If GetAsyncKeyState(vbKeyRight) <> 0 And _
-    PreviousRightKeyState = 0 Then rightkey
-    
-    PreviousUpKeyState = GetAsyncKeyState(vbKeyUp)
-    
-    PreviousDownKeyState = GetAsyncKeyState(vbKeyDown)
-    
-    PreviousLeftKeyState = GetAsyncKeyState(vbKeyLeft)
-    
-    PreviousRightKeyState = GetAsyncKeyState(vbKeyRight)
-    
-    'Debug.Print GetAsyncKeyState(vbKeyUp), GetAsyncKeyState(vbKeyDown), GetAsyncKeyState(vbKeyLeft), GetAsyncKeyState(vbKeyRight)
-
 End Sub
+Private Function GetDistant(UX As Integer, UY As Integer, IX As Integer, IY As Integer) As Single
+    Dim x As Single
+    Dim y As Single
+    
+    x = (UX - IX) ^ 2
+    y = (UY - IY) ^ 2
+    GetDistant = Sqr(x + y)
 
+End Function
 
-
-Private Sub Flap()
-
-    BirdVerticalMovement = FlapHeight
-
-End Sub
-
-Private Sub Dive()
-
-    BirdVerticalMovement = DiveDepth
-
-End Sub
 
 Public Function DetectingCollision() As Boolean
     'If shGame.Cells(Snake(0).PositionX, Snake(0).PositionY).Interior.Color = GameColour.gcBlack Then
@@ -187,5 +201,4 @@ End Function
 '    Set FloorRange = pGameSheet.FloorRange.Cells(1, 1)
 
 'End Property
-
 
