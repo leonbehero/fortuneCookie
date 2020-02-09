@@ -1,24 +1,64 @@
 Private GameTimer As clsTimer
 Dim Citizen As clsCitizen
-Dim City As clsCity
+'Dim City As clsCity
+Dim Hospital As clsHospital
 'Private GameSheet As clsGameSheet
 
 Public Sub InitialiseGame()
 
 'Application.ScreenUpdating = False
 
-    Set City = New clsCity
+    'Set City = New clsCity
     Set Citizen = New clsCitizen
-    DayCount = 0
+    Set Hospital = New clsHospital
     
+    'Citizen.DrawPerson
+    DayCount = 1
+    PatientNumber = 0
+    HealthyNumber = CityPopulation - InfectionNumber
+    shData.Range("a2:c500").Value = ""
+    shData.Range("a" & DayCount + 1).Value = DayCount
+    shData.Range("b" & DayCount + 1).Value = InfectionNumber + 1
+    shData.Range("c" & DayCount + 1).Value = InfectionNumber + 1
+    shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
+    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = HealthyNumber + 1
+    shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
+    shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
+    shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = TotalBeds
+    shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
     SetGameKeys
-    
+                                                                    
     Set GameTimer = New clsTimer
     
     GameTimer.StartTimer
 
 End Sub
+Public Sub resetGame()
+    Set GameTimer = Nothing
+    Set Citizen = Nothing
+    Set Hospital = Nothing
+    shData.Range("a2:c500").Value = ""
+    shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = CityPopulation + 1
+    shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Range("E195:to705").ClearFormats
+    Set Citizen = Nothing
+    Set Hospital = Nothing
+    
+    
+End Sub
 
+Public Sub PauseGame()
+    Set GameTimer = Nothing
+End Sub
+Public Sub ResumeGame()
+    Set GameTimer = New clsTimer
+    
+    GameTimer.StartTimer
+End Sub
 Public Sub TerminateGame()
 
     'Called once when game ends
@@ -28,6 +68,7 @@ Public Sub TerminateGame()
     Set GameTimer = Nothing
     
     Set Citizen = Nothing
+    Set Hospital = Nothing
     
     'shMenu.Activate
     
@@ -37,9 +78,10 @@ Public Sub TerminateGame()
 
 End Sub
 Public Sub updateanddraw()
-        Citizen.Update
-        Citizen.DrawPerson
-        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = DayCount
+        Citizen.update
+        Citizen.CalculateInfection
+        'Citizen.DrawPerson
+        shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
 End Sub
 Public Sub UpdateAndDrawGame()
 
@@ -60,16 +102,35 @@ Public Sub UpdateAndDrawGame()
         Exit Sub
     
     End If
-    Debug.Print TimerCount
-    If TimerCount Mod 5 = 0 Then
-        DayCount = DayCount + 1
-        Citizen.Update
-        Citizen.DrawPerson
-        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = DayCount
+    'Debug.Print TimerCount
+    If TimerCount Mod 2 = 0 Then
+        'DayCount = DayCount + 1
+        Citizen.update
+        Citizen.CalculateInfection
+        'Citizen.DrawPerson
+        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
+        HealthyNumber = CityPopulation - InfectionNumber
+        shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = HealthyNumber + 1
+        shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
+        updateBarCharts
     End If
     
-    If TimerCount Mod 24 = 0 Then
+    If TimerCount Mod 4 = 0 Then
         DayCount = DayCount + 1
+        shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
+        Hospital.update
+        Hospital.updatePatient
+        shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
+        shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = TotalBeds
+        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
+        shCity.Shapes("NumberofRecovered").TextFrame2.TextRange.Characters.Text = RecoveredPatient
+        shData.Range("a" & DayCount + 1).Value = DayCount
+        shData.Range("c" & DayCount + 1).Value = InfectionNumber + 1 - RecoveredPatient
+        shData.Range("b" & DayCount + 1).Value = InfectionNumber - shData.Range("c" & DayCount).Value + 1
+        
+        If DayCount Mod 7 = 0 Then
+            PauseGame
+        End If
     End If
     
     'If TimerCount Mod 10 = 0 Then
@@ -81,9 +142,22 @@ Public Sub UpdateAndDrawGame()
     'End If
 
 End Sub
+Sub updateBarCharts()
+    Dim barLength As Integer
+    Dim Percentage As Single
+    
+    Percentage = InfectionNumber / CityPopulation
+    shCity.Shapes("InfectionBar2").Width = CInt(Percentage * shCity.Shapes("InfectionBar1").Width)
+    'shCity.Shapes("InfectionBar1").Width = 400
+    'Debug.Print shCity.Shapes("InfectionBar1").Width
+End Sub
+Sub updatebar()
+    shCity.Shapes("InfectionBar1").Width = 600
+    
+End Sub
 Sub getcolor()
     
-    Debug.Print Range("a1").Interior.ColorIndex
+    Debug.Print Range("a5").Interior.ColorIndex
     
 End Sub
 Sub testtextframe()
@@ -93,6 +167,7 @@ Debug.Print shCity.Shapes(1).Name
 shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = "Infection Number:"
 
 End Sub
+
 Private Sub SetGameKeys()
 
     Application.OnKey "{ESC}", ""
@@ -125,14 +200,11 @@ Private Sub ResetKeys()
 
 End Sub
 
-Sub testingloop()
-Dim x As Integer
-
-    Do
-        x = x + 1
-        Debug.Print x
-        
-    Loop While x < 3
+Sub testingrandom()
+    Dim x As Integer
+    x = Int((5 - 0 - 1) * Rnd + 1)
+    Debug.Print x
+    
 End Sub
 
 
@@ -195,98 +267,11 @@ Private Sub Timers()
     End If
 End Sub
 
-Private Sub Snake()
-    If TimerActive Then
-        ActiveSheet.Cells(2, 2).Color = vbBlack
-        Application.OnTime Now() + TimeValue("00:00:01"), "drawSnake"
-    End If
-End Sub
-
-'Private Sub drawSnake()
-'    If TimerActive Then
-'        ActiveSheet.Cells(2, 2).Color = vbBlack
-'        Application.OnTime Now() + TimeValue("00:00:01"), "drawSnake"
-'    End If
-'End Sub
-
-
-
-
-
-Sub drawSnake()
-
-
-End Sub
-Sub rightkey()
-    If DirectionX = -1 And DirectionY = 0 Then
-        DirectionX = 0
-        DirectionY = 1
-    ElseIf DirectionX = 0 And DirectionY = 1 Then
-        DirectionX = 0
-        DirectionY = 1
-    ElseIf DirectionX = 1 And DirectionY = 0 Then
-        DirectionX = 0
-        DirectionY = 1
-    ElseIf DirectionX = 0 And DirectionY = -1 Then
-        DirectionX = 0
-        DirectionY = -1
-    End If
-End Sub
-Sub leftkey()
-    If DirectionX = -1 And DirectionY = 0 Then
-        DirectionX = 0
-        DirectionY = -1
-    ElseIf DirectionX = 0 And DirectionY = 1 Then
-        DirectionX = 0
-        DirectionY = 1
-    ElseIf DirectionX = 1 And DirectionY = 0 Then
-        DirectionX = 0
-        DirectionY = -1
-    ElseIf DirectionX = 0 And DirectionY = -1 Then
-        DirectionX = 0
-        DirectionY = -1
-    End If
-End Sub
-Sub upkey()
-    If DirectionX = -1 And DirectionY = 0 Then
-        DirectionX = -1
-        DirectionY = 0
-    ElseIf DirectionX = 0 And DirectionY = 1 Then
-        DirectionX = -1
-        DirectionY = 0
-    ElseIf DirectionX = 1 And DirectionY = 0 Then
-        DirectionX = 1
-        DirectionY = 0
-    ElseIf DirectionX = 0 And DirectionY = -1 Then
-        DirectionX = -1
-        DirectionY = 0
-    End If
-End Sub
-Sub downkey()
-    If DirectionX = -1 And DirectionY = 0 Then
-        DirectionX = -1
-        DirectionY = 0
-    ElseIf DirectionX = 0 And DirectionY = 1 Then
-        DirectionX = 1
-        DirectionY = 0
-    ElseIf DirectionX = 1 And DirectionY = 0 Then
-        DirectionX = 1
-        DirectionY = 0
-    ElseIf DirectionX = 0 And DirectionY = -1 Then
-        DirectionX = 1
-        DirectionY = 0
-    End If
-End Sub
-
-Sub ResetGame()
-    ActiveSheet.Range("PlayGround").ClearFormats
-End Sub
 
 Sub testrandom()
     Dim x As Double
-    x = RandNorm(0, 1)
+    x = Int(Abs(RandNorm(0, 1) * 28))
     Debug.Print x
     
 End Sub
-
 
