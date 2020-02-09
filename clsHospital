@@ -1,0 +1,68 @@
+Option Explicit
+
+
+Private Const beds As Integer = 100
+Private Const dailyLimit As Integer = 50
+
+Private AvailableBeds As Integer
+
+Private Sub Class_Initialize()
+
+    TotalBeds = 0
+    RecoveredPatient = 0
+
+    TotalBeds = TotalBeds + beds
+    AvailableBeds = beds
+    
+End Sub
+
+
+
+
+Public Sub update()
+
+    Dim i As Integer
+    Dim x As Integer
+    Dim usdbeds As Integer
+    
+    Dim n As Integer
+    
+    usdbeds = 0
+    If dailyLimit <= AvailableBeds Then
+        n = dailyLimit
+    Else
+        n = AvailableBeds
+    End If
+    
+    For i = 0 To n
+        For x = 0 To InfectionNumber
+            If Persons(InfectedPersonsID(x)).Status = 2 Then
+                Persons(InfectedPersonsID(x)).Status = 3
+                Persons(InfectedPersonsID(x)).InHospitalDay = TimerCount
+                Persons(InfectedPersonsID(x)).RecoverPeriod = Int(Abs(RandNorm(0, 1) * AVGCureTime))
+                usdbeds = usdbeds + 1
+                PatientNumber = PatientNumber + 1
+                Exit For
+            End If
+        Next
+    Next
+    
+    TotalBeds = TotalBeds - usdbeds
+    AvailableBeds = AvailableBeds - usdbeds
+    
+End Sub
+
+Public Sub updatePatient()
+
+    Dim i As Integer
+    Dim x As Integer
+    For i = 0 To InfectionNumber
+        If Persons(InfectedPersonsID(x)).Status = 3 Then
+            If TimerCount - Persons(InfectedPersonsID(x)).InHospitalDay > Persons(InfectedPersonsID(x)).RecoverPeriod Then
+                Persons(InfectedPersonsID(x)).Status = 4
+                RecoveredPatient = RecoveredPatient + 1
+            End If
+        End If
+    Next
+    
+End Sub
