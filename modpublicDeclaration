@@ -1,0 +1,121 @@
+Option Explicit
+
+#If Win64 Then
+
+    'Code is running in 64-bit Office
+    
+    Public Declare PtrSafe Sub Sleep Lib "kernel32" ( _
+    ByVal dwMilliseconds As Long)
+    
+
+    Public Declare PtrSafe Function GetAsyncKeyState Lib "user32" ( _
+    ByVal vKey As Long) As Integer
+
+#Else
+
+    'Code is running in 32-bit Office
+    
+    Public Declare Sub Sleep Lib "kernel32" ( _
+    ByVal dwMilliseconds As Long)
+    
+
+    
+    Public Declare Function GetAsyncKeyState Lib "user32" ( _
+    ByVal vKey As Long) As Integer
+
+#End If
+
+Public Type PersonType
+    PositionX As Integer
+    PositionY As Integer
+    'PreviousPositionX As Integer
+    'previousPositionY As Integer
+    Status As Integer
+    InfectedStartTime As Integer
+    CoolingPeriod As Integer
+    MoveIntention As Single
+    RecoverPeriod As Integer
+    InHospitalDay As Integer
+    DeathPeriod As Integer
+    
+End Type
+
+Public citypopulation As Integer
+
+Public CityStartX As Integer
+Public CityEndX As Integer
+Public CityStartY As Integer
+Public CityEndY As Integer
+Public firstPatch As Integer
+Public SafeDist As Single
+Public HospitalReactionDay As Integer
+Public AVGShadowTime As Integer
+Public AVGCureTime As Integer
+Public PeriodofTurn As Integer
+Public AVGDeathTime As Integer
+
+
+Public MoveIntention As Single
+Public ChanceofInfection As Single
+Public TimerCount As Long
+Public DayCount As Long
+Public InfectionNumber As Integer
+Public SickPersonNumber As Integer
+Public Persons() As PersonType
+Public InfectedPersonsID() As Integer
+Public ExposedPersonsID() As Integer
+Public InHospitalPersonsID() As Integer
+Public ExposedNumber As Integer
+Public PatientNumber As Integer
+Public IncubationPeriod As Integer
+Public DailyInfectionNumber() As Integer
+Public HealthyNumber As Integer
+Public DeathNumber As Integer
+Public TotalBeds As Integer
+Public RecoveredPatient As Integer
+Public ProgressCount As Integer
+Public AvailableBeds As Integer
+
+
+Public Enum GameColour
+
+    gcBrown = 128
+    gcLightBrown = 8761087
+    gcSkyBlue = 13408512
+    gcGrassGreen = 32768
+    gcBlack = 1
+    'gcHealth = 41
+    gcInfected = 44
+    gcSick = 3
+    'gcHealth = 8
+    gcHealth = 20
+    gcInfectionBar = 22
+    'gcInfected = 36
+    'gcSick = 22
+
+End Enum
+
+Public Function RandNorm(meanVal As Double, Stdev As Double)
+    RandNorm = WorksheetFunction.NormInv(Rnd, meanVal, Stdev)
+End Function
+
+
+Sub testdist()
+    Dim x As Single
+    Dim y As Single
+    Dim d As Single
+    Dim UX As Integer
+    Dim UY As Integer
+    Dim IX As Integer
+    Dim IY As Integer
+    UX = 243
+    UY = 646
+    IX = 288
+    IY = 9798
+    x = (UX - IX) ^ 2
+    y = (UY - IY) ^ 2
+    d = Sqr(x + y)
+    Debug.Print d
+    
+End Sub
+
