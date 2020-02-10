@@ -4,6 +4,28 @@ Dim Citizen As clsCitizen
 Dim Hospital As clsHospital
 'Private GameSheet As clsGameSheet
 
+Sub InitilizeVariable()
+  
+    citypopulation = Range("Population").Value - 1
+    CityStartX = 10
+    CityEndX = Range("CityRange").Value + CityStartX
+    CityStartY = 10
+    CityEndY = Range("CityRange").Value + CityStartY
+    firstPatch = Range("firstPatch").Value - 1
+    SafeDist = Range("SafeDist").Value
+    HospitalReactionDay = Range("HospitalReactionDay").Value * 4
+    AVGShadowTime = Range("AVGShadowTime").Value * 4
+    AVGCureTime = Range("AVGCureTime").Value * 4
+    PeriodofTurn = Range("PeriodofTurn").Value * 4
+    AVGDeathTime = Range("AVGDeathTime").Value * 4
+    
+    DayCount = 0
+    TimerCount = 0
+    PatientNumber = 0
+    ProgressCount = 0
+
+End Sub
+
 Public Sub InitialiseGame()
 
 'Application.ScreenUpdating = False
@@ -12,10 +34,10 @@ Public Sub InitialiseGame()
     Set Citizen = New clsCitizen
     Set Hospital = New clsHospital
     
+ 
     'Citizen.DrawPerson
-    DayCount = 1
-    PatientNumber = 0
-    HealthyNumber = CityPopulation - InfectionNumber
+    AvailableBeds = AvailableBeds + 1
+    HealthyNumber = citypopulation - InfectionNumber
     shData.Range("a2:c500").Value = ""
     shData.Range("a" & DayCount + 1).Value = DayCount
     shData.Range("b" & DayCount + 1).Value = InfectionNumber + 1
@@ -26,6 +48,7 @@ Public Sub InitialiseGame()
     shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
     shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = TotalBeds
     shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
+    
     SetGameKeys
                                                                     
     Set GameTimer = New clsTimer
@@ -34,12 +57,13 @@ Public Sub InitialiseGame()
 
 End Sub
 Public Sub resetGame()
+
     Set GameTimer = Nothing
     Set Citizen = Nothing
     Set Hospital = Nothing
     shData.Range("a2:c500").Value = ""
     shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = 0
-    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = CityPopulation + 1
+    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = citypopulation + 1
     shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = 0
     shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = 0
     shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = 0
@@ -47,18 +71,22 @@ Public Sub resetGame()
     shCity.Range("E195:to705").ClearFormats
     Set Citizen = Nothing
     Set Hospital = Nothing
-    
-    
+
 End Sub
 
 Public Sub PauseGame()
+
     Set GameTimer = Nothing
+    
 End Sub
 Public Sub ResumeGame()
+
     Set GameTimer = New clsTimer
     
     GameTimer.StartTimer
+    
 End Sub
+
 Public Sub TerminateGame()
 
     'Called once when game ends
@@ -92,8 +120,11 @@ Public Sub UpdateAndDrawGame()
     'Updates all game logic
     
     'Draws all game objects
-    'Debug.Print GetAsyncKeyState(vbKeyTab)
+    ProgressCount = ProgressCount + 1
+    
     TimerCount = TimerCount + 1
+    Debug.Print ProgressCount, TimerCount
+    
     
     If GetAsyncKeyState(vbKeyTab) <> 0 Then
     
@@ -109,7 +140,7 @@ Public Sub UpdateAndDrawGame()
         Citizen.CalculateInfection
         'Citizen.DrawPerson
         shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
-        HealthyNumber = CityPopulation - InfectionNumber
+        HealthyNumber = citypopulation - InfectionNumber
         shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = HealthyNumber + 1
         shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
         updateBarCharts
@@ -117,6 +148,7 @@ Public Sub UpdateAndDrawGame()
     
     If TimerCount Mod 4 = 0 Then
         DayCount = DayCount + 1
+        'ProgressCount = ProgressCount + 1
         shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
         Hospital.update
         Hospital.updatePatient
@@ -130,8 +162,15 @@ Public Sub UpdateAndDrawGame()
         
         If DayCount Mod 7 = 0 Then
             PauseGame
+            ProgressCount = 0
         End If
     End If
+    
+    'If ProgressCount Mod 7 = 0 Then
+    '    ProgressCount = 0
+    'End If
+    
+    
     
     'If TimerCount Mod 10 = 0 Then
     '    shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
@@ -145,9 +184,17 @@ End Sub
 Sub updateBarCharts()
     Dim barLength As Integer
     Dim Percentage As Single
+    Dim label As String
     
-    Percentage = InfectionNumber / CityPopulation
+    Percentage = InfectionNumber / citypopulation
     shCity.Shapes("InfectionBar2").Width = CInt(Percentage * shCity.Shapes("InfectionBar1").Width)
+    
+    Percentage = ProgressCount / PeriodofTurn
+    label = CStr(Format(Percentage, "0%"))
+    shCity.Shapes("ProgressBar1").TextFrame2.TextRange.Characters.Text = label
+    shCity.Shapes("ProgressBar2").Width = CInt(Percentage * shCity.Shapes("ProgressBar1").Width)
+    
+    
     'shCity.Shapes("InfectionBar1").Width = 400
     'Debug.Print shCity.Shapes("InfectionBar1").Width
 End Sub
@@ -274,4 +321,3 @@ Sub testrandom()
     Debug.Print x
     
 End Sub
-
