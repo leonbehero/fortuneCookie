@@ -31,17 +31,19 @@ Public Type PersonType
     'PreviousPositionX As Integer
     'previousPositionY As Integer
     Status As Integer
+    'Status:0 Healthy, Status:1 Exposed, Status:2 Sick, Status: 3 in hospital, Status: 4 Recovered, Status: 5 Death
     InfectedStartTime As Integer
     CoolingPeriod As Integer
     MoveIntention As Single
     RecoverPeriod As Integer
     InHospitalDay As Integer
     DeathPeriod As Integer
-    
+    LocationGroup() As Integer
 End Type
 
-Public citypopulation As Integer
 
+
+Public citypopulation As Integer
 Public CityStartX As Integer
 Public CityEndX As Integer
 Public CityStartY As Integer
@@ -53,7 +55,7 @@ Public AVGShadowTime As Integer
 Public AVGCureTime As Integer
 Public PeriodofTurn As Integer
 Public AVGDeathTime As Integer
-
+Public DeathRate As Single
 
 Public MoveIntention As Single
 Public ChanceofInfection As Single
@@ -71,11 +73,17 @@ Public IncubationPeriod As Integer
 Public DailyInfectionNumber() As Integer
 Public HealthyNumber As Integer
 Public DeathNumber As Integer
+Public SickNumber As Integer
 Public TotalBeds As Integer
 Public RecoveredPatient As Integer
 Public ProgressCount As Integer
 Public AvailableBeds As Integer
-
+Public startCoins As Long
+Public totalCoins As Long
+Public CoinsPerPersonGenerated As Long
+Public CostPerPatient As Long
+Public CostofHospital As Long
+Public CostofVacine As Long
 
 Public Enum GameColour
 
@@ -119,3 +127,46 @@ Sub testdist()
     
 End Sub
 
+Sub Tester()
+    Dim i As Integer
+    Dim x As Integer
+    Dim y As Integer
+    Dim arr() As Integer
+    
+    ReDim Preserve arr(0 To 1, 0 To 1, 0 To 4)
+    For i = 0 To 4
+        arr(0, 0, i) = i
+    Next
+    For i = 0 To UBound(arr, 3)
+        Debug.Print arr(0, 0, i)
+    Next
+
+    RemoveItem arr, 2
+
+    For i = 0 To UBound(arr, 3)
+        Debug.Print arr(0, 0, i)
+    Next
+End Sub
+
+Sub RemoveItem(arr, v)
+    Dim rv(), i As Long, n As Long
+
+    n = 0
+    For i = 0 To UBound(arr, 3)
+        If arr(0, 0, i) <> v Then
+            Debug.Print "i:", arr(0, 0, i)
+            ReDim Preserve rv(0, 0, 0 To n)
+            rv(0, 0, n) = arr(0, 0, i)
+            n = n + 1
+        End If
+    Next
+    'check bounds before resizing
+    n = n - 1
+    'Debug.Print n
+    
+    ReDim Preserve arr(0 To 1, 0 To 1, 0 To n)
+    For i = 0 To UBound(rv, 3)
+        arr(0, 0, i) = rv(0, 0, i)
+    Next
+    
+End Sub
