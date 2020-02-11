@@ -3,16 +3,18 @@ Option Explicit
 
 Private Const beds As Integer = 100
 Private Const dailyLimit As Integer = 50
+Private StartTime As Integer
 
-Private AvailableBeds As Integer
+
+
 
 Private Sub Class_Initialize()
 
     TotalBeds = 0
-    RecoveredPatient = 0
 
     TotalBeds = TotalBeds + beds
-    AvailableBeds = beds
+    AvailableBeds = AvailableBeds + beds
+    StartTime = TimerCount
     
 End Sub
 
@@ -23,32 +25,35 @@ Public Sub update()
 
     Dim i As Integer
     Dim x As Integer
-    Dim usdbeds As Integer
+    'Dim usdbeds As Integer
     
     Dim n As Integer
     
-    usdbeds = 0
+    If TimerCount - StartTime < HospitalReactionDay Or AvailableBeds = 0 Then
+        Exit Sub
+    End If
+    'usdbeds = 0
     If dailyLimit <= AvailableBeds Then
         n = dailyLimit
     Else
         n = AvailableBeds
     End If
-    
-    For i = 0 To n
-        For x = 0 To InfectionNumber
+
+    For i = 0 To n - 1
+        For x = 0 To InfectionNumber - 1
             If Persons(InfectedPersonsID(x)).Status = 2 Then
                 Persons(InfectedPersonsID(x)).Status = 3
                 Persons(InfectedPersonsID(x)).InHospitalDay = TimerCount
                 Persons(InfectedPersonsID(x)).RecoverPeriod = Int(Abs(RandNorm(0, 1) * AVGCureTime))
-                usdbeds = usdbeds + 1
+                AvailableBeds = AvailableBeds - 1
                 PatientNumber = PatientNumber + 1
                 Exit For
             End If
         Next
     Next
     
-    TotalBeds = TotalBeds - usdbeds
-    AvailableBeds = AvailableBeds - usdbeds
+    'TotalBeds = TotalBeds - usdbeds
+    'AvailableBeds = AvailableBeds - usdbeds
     
 End Sub
 
@@ -56,11 +61,15 @@ Public Sub updatePatient()
 
     Dim i As Integer
     Dim x As Integer
-    For i = 0 To InfectionNumber
-        If Persons(InfectedPersonsID(x)).Status = 3 Then
-            If TimerCount - Persons(InfectedPersonsID(x)).InHospitalDay > Persons(InfectedPersonsID(x)).RecoverPeriod Then
-                Persons(InfectedPersonsID(x)).Status = 4
+    
+    For i = 0 To InfectionNumber - 1
+        If Persons(InfectedPersonsID(i)).Status = 3 Then
+            If TimerCount - Persons(InfectedPersonsID(i)).InHospitalDay > Persons(InfectedPersonsID(i)).RecoverPeriod Then
+                Persons(InfectedPersonsID(i)).Status = 4
+                PatientNumber = PatientNumber - 1
                 RecoveredPatient = RecoveredPatient + 1
+                AvailableBeds = AvailableBeds + 1
+                SickNumber = SickNumber - 1
             End If
         End If
     Next
