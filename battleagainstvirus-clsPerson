@@ -10,15 +10,63 @@ Private Sub Class_Initialize()
     
 End Sub
 
-Public Sub update()
-    'Application.ScreenUpdating = False
+Private Sub PersonBirth()
+
+    Dim x As Integer
+    x = citypopulation - 1
+
+    ReDim Preserve Persons(0 To x)
+    
+    For x = 0 To citypopulation - 1
+
+        Persons(x).PositionX = Int((CityEndX - CityStartX + 1) * Rnd + CityStartX)
+        Persons(x).PositionY = Int((CityEndY - CityStartY + 1) * Rnd + CityStartY)
+        Persons(x).Status = 0
+
+        'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+    Next
+    
+End Sub
+Private Sub InitiliseInfection()
+    
+    Dim i As Integer
+    Dim x As Integer
+    Dim DeathRate As Integer
+    
+    For i = 0 To firstPatch - 1
+    'Debug.Print i
+        ReDim Preserve InfectedPersonsID(0 To i)
+        Do
+            x = Int((citypopulation - 0 + 1) * Rnd + 1)
+            
+        Loop While Persons(x).Status = 1
+
+        
+        Persons(x).Status = 1
+        ExposedNumber = ExposedNumber + 1
+        Persons(x).InfectedStartTime = TimerCount
+        'Debug.Print "cooling perid", getCoolingPeriod
+        Persons(x).CoolingPeriod = getCoolingPeriod
+        'Debug.Print "death perid", getDeathPeriod
+        Persons(x).DeathPeriod = getDeathPeriod
+
+        InfectedPersonsID(i) = x
+        InfectionNumber = InfectionNumber + 1
+
+        
+    Next
+
+End Sub
+
+Public Sub updateMovement()
+
     Dim x As Integer
     Dim UX As Integer
     Dim UY As Integer
     
-    For x = 0 To UBound(Persons)
-        If getRandomMoveintention And Persons(x).Status <> 3 Then
-            shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
+    For x = 0 To citypopulation - 1
+        If getRandomMoveintention Or Persons(x).Status <> 3 Or Persons(x).Status <> 4 Or Persons(x).Status <> 5 Then
+            'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
             'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX).ClearFormats
             'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX + 1).ClearFormats
             'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX + 1).ClearFormats
@@ -49,27 +97,36 @@ Private Function getChanceofInfection() As Boolean
     End If
 End Function
 Public Sub CalculateInfection()
+
     Dim i As Integer
     Dim x As Integer
-    Dim d As Single
+    Dim d As Double
     'n = UBound(InfectedPersonsID)
-    For i = 0 To CityPopulation
+    For i = 0 To citypopulation - 1
         'Debug.Print "stats", Persons(i).Status
         If Persons(i).Status = 0 Then
             If getChanceofInfection Then
-                For x = 0 To UBound(InfectedPersonsID)
+                For x = 0 To InfectionNumber - 1
                     If Persons(InfectedPersonsID(x)).Status = 1 Or Persons(InfectedPersonsID(x)).Status = 2 Then
+                        'Debug.Print InfectionNumber, Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY
                         d = GetDistant(Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY)
-                        'Debug.Print "distant:", InfectionNumber, d, Persons(i).PositionX, Persons(i).PositionY, Persons(x).PositionX, Persons(x).PositionY
+                        'Debug.Print "distant:", InfectionNumber, d, Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY
                         If d < SafeDist Then
                             'Debug.Print d
                             Persons(i).Status = 1
                             Persons(i).InfectedStartTime = TimerCount
-                            Persons(i).CoolingPeriod = Int(Abs(RandNorm(0, 1) * AVGShadowTime))
-                            InfectionNumber = InfectionNumber + 1
+                            Persons(i).CoolingPeriod = getCoolingPeriod
+                            
+                            Persons(i).DeathPeriod = getDeathPeriod
+
+                           ' Debug.Print "infection number: ", InfectionNumber
                             ReDim Preserve InfectedPersonsID(0 To InfectionNumber)
+                            'Debug.Print i, UBound(InfectedPersonsID)
                             InfectedPersonsID(InfectionNumber) = i
                             ExposedNumber = ExposedNumber + 1
+
+                            InfectionNumber = InfectionNumber + 1
+                            
                             Exit For
                         End If
                     End If
@@ -77,55 +134,97 @@ Public Sub CalculateInfection()
             End If
         End If
     Next
-    
-    For i = 0 To InfectionNumber
-        If Persons(InfectedPersonsID(i)).Status = 1 Then
-            If TimerCount - Persons(InfectedPersonsID(i)).InfectedStartTime >= Persons(InfectedPersonsID(i)).CoolingPeriod Then
-                Persons(InfectedPersonsID(i)).Status = 2
-                ExposedNumber = ExposedNumber - 1
+'Debug.Print "infection number: ", InfectionNumber, UBound(InfectedPersonsID)
+    If InfectionNumber > 0 Then
+        For i = 0 To InfectionNumber - 1
+            If Persons(InfectedPersonsID(i)).Status = 1 Then
+
+                'Debug.Print InfectionNumber, Persons(InfectedPersonsID(i)).Status, Persons(InfectedPersonsID(i)).InfectedStartTime, Persons(InfectedPersonsID(i)).CoolingPeriod
+                If TimerCount - Persons(InfectedPersonsID(i)).InfectedStartTime >= Persons(InfectedPersonsID(i)).CoolingPeriod Then
+                    Persons(InfectedPersonsID(i)).Status = 2
+                    ExposedNumber = ExposedNumber - 1
+                    'Debug.Print "Exposed number: ", ExposedNumber, Persons(InfectedPersonsID(i)).CoolingPeriod, TimerCount, Persons(InfectedPersonsID(i)).InfectedStartTime
+                    SickNumber = SickNumber + 1
+                End If
             End If
-        End If
-    Next
-End Sub
-
-Private Sub PersonBirth()
-
-    Dim x As Integer
-
-    'Application.ScreenUpdating = False
-    ReDim Preserve Persons(0 To CityPopulation)
+        Next
+        
+        For i = 0 To InfectionNumber - 1
+            If Persons(InfectedPersonsID(i)).Status = 1 Or Persons(InfectedPersonsID(i)).Status = 2 Or Persons(InfectedPersonsID(i)).Status = 3 Then
+               ' Debug.Print InfectionNumber, Persons(InfectedPersonsID(i)).Status, Persons(InfectedPersonsID(i)).InfectedStartTime, Persons(InfectedPersonsID(i)).DeathPeriod
+                If TimerCount - Persons(InfectedPersonsID(i)).InfectedStartTime >= Persons(InfectedPersonsID(i)).DeathPeriod Then
     
-    For x = 0 To CityPopulation
-
-        Persons(x).PositionX = Int((CityEndX - 50 - CityStartX + 1) * Rnd + CityStartX + 20)
-        Persons(x).PositionY = Int((CityEndY - 50 - CityStartY + 1) * Rnd + CityStartY + 20)
-        Persons(x).Status = 0
-
-        'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
-        'Debug.Print Persons(x).PositionY, Persons(x).PositionX
-    Next
+                    Select Case Persons(InfectedPersonsID(i)).Status
+                        Case 1
+                            ExposedNumber = ExposedNumber - 1
+                        Case 2
+                            SickNumber = SickNumber - 1
+                        Case 3
+                            PatientNumber = PatientNumber - 1
+                            AvailableBeds = AvailableBeds + 1
+                            SickNumber = SickNumber - 1
+                    End Select
+                    DeathNumber = DeathNumber + 1
+                    Persons(InfectedPersonsID(i)).Status = 5
+                    
+                End If
+            End If
+        Next
+    End If
     
 End Sub
-Private Sub InitiliseInfection()
+Private Function getCoolingPeriod() As Integer
+
+    getCoolingPeriod = Int(Abs(RandNorm(0, 1) * AVGShadowTime))
+    
+End Function
+Private Function getDeathPeriod() As Integer
+
+    If ifDeath Then
+        Do
+        getDeathPeriod = Int(Abs(RandNorm(0, 1) * AVGDeathTime))
+        Loop While getDeathPeriod = 0
+    Else
+        getDeathPeriod = 999
+    End If
+
+End Function
+Public Sub calculateCoins()
     
     Dim i As Integer
-    Dim x As Integer
-    ExposedNumber = 0
-    For i = 0 To firstPatch
-        ReDim Preserve InfectedPersonsID(0 To i)
-        Do
-            x = Int((CityPopulation - 0 - 1) * Rnd + 1)
-            
-        Loop While Persons(x).Status = 1
-        Persons(x).Status = 1
-        ExposedNumber = ExposedNumber + 1
-        Persons(x).InfectedStartTime = TimerCount
-        Persons(x).CoolingPeriod = Int(Abs(RandNorm(0, 1) * AVGShadowTime))
-        Debug.Print Persons(x).CoolingPeriod
-        InfectedPersonsID(i) = x
-    Next
-    InfectionNumber = firstPatch
+    
+    If MoveIntention = -0.99 Then
+        For i = 0 To citypopulation - 1
+            If Persons(i).Status = 3 Then
+                totalCoins = totalCoins - CostPerPatient
+            End If
+        Next
+    Else
+        For i = 0 To citypopulation - 1
+            Select Case Persons(i).Status
+                Case 0, 1, 2, 4
+                    totalCoins = totalCoins + CoinsPerPersonGenerated
+                Case 3
+                    totalCoins = totalCoins - CostPerPatient
+            End Select
+        Next
+    End If
+    
 End Sub
+Private Function ifDeath() As Boolean
+    
+    Dim i As Single
+    
+    ifDeath = False
+    i = DeathRate + RandNorm(0, 1)
+
+    If i > 0 Then
+        ifDeath = True
+    End If
+    
+End Function
+
+
     
 Public Sub DrawPerson()
     Dim x As Integer
@@ -201,4 +300,5 @@ End Function
 '    Set FloorRange = pGameSheet.FloorRange.Cells(1, 1)
 
 'End Property
+
 
