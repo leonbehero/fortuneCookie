@@ -6,48 +6,92 @@ Dim Hospital As clsHospital
 
 Sub InitilizeVariable()
   
-    citypopulation = Range("Population").Value - 1
-    CityStartX = 10
+    citypopulation = Range("Population").Value
+    CityStartX = 100
     CityEndX = Range("CityRange").Value + CityStartX
-    CityStartY = 10
+    CityStartY = 100
     CityEndY = Range("CityRange").Value + CityStartY
-    firstPatch = Range("firstPatch").Value - 1
+    firstPatch = Range("firstPatch").Value
     SafeDist = Range("SafeDist").Value
     HospitalReactionDay = Range("HospitalReactionDay").Value * 4
     AVGShadowTime = Range("AVGShadowTime").Value * 4
     AVGCureTime = Range("AVGCureTime").Value * 4
     PeriodofTurn = Range("PeriodofTurn").Value * 4
     AVGDeathTime = Range("AVGDeathTime").Value * 4
+    DeathRate = Range("DeathRatio").Value
+    
+    startCoins = Range("StartCoins").Value
+    totalCoins = Range("StartCoins").Value
+    CoinsPerPersonGenerated = Range("CoinsPerPersonGenerated").Value
+    CostPerPatient = Range("CostPerPatient").Value
+    CostofHospital = Range("CostofHospital").Value
+    CostofVacine = Range("CostofVacine").Value
+    
+    'Debug.Print citypopulation, CityEndX, CityEndY, firstPatch, SafeDist, HospitalReactionDay, AVGShadowTime, AVGCureTime, PeriodofTurn, AVGDeathTime
     
     DayCount = 0
     TimerCount = 0
     PatientNumber = 0
     ProgressCount = 0
+    ExposedNumber = 0
+    InfectionNumber = 0
+    SickNumber = 0
+    DeathNumber = 0
+    RecoveredPatient = 0
+    TotalBeds = 0
+    AvailableBeds = 0
 
 End Sub
+Sub UpdatePublicVariables()
 
+    SafeDist = Range("SafeDist").Value
+    HospitalReactionDay = Range("HospitalReactionDay").Value * 4
+    AVGShadowTime = Range("AVGShadowTime").Value * 4
+    AVGCureTime = Range("AVGCureTime").Value * 4
+    PeriodofTurn = Range("PeriodofTurn").Value * 4
+    AVGDeathTime = Range("AVGDeathTime").Value * 4
+    DeathRate = Range("DeathRatio").Value
+    
+    CoinsPerPersonGenerated = Range("CoinsPerPersonGenerated").Value
+    CostPerPatient = Range("CostPerPatient").Value
+    CostofHospital = Range("CostofHospital").Value
+    CostofVacine = Range("CostofVacine").Value
+    
+End Sub
 Public Sub InitialiseGame()
 
 'Application.ScreenUpdating = False
+
+    InitilizeVariable
 
     'Set City = New clsCity
     Set Citizen = New clsCitizen
     Set Hospital = New clsHospital
     
- 
     'Citizen.DrawPerson
-    AvailableBeds = AvailableBeds + 1
+    'AvailableBeds = AvailableBeds + 1
     HealthyNumber = citypopulation - InfectionNumber
-    shData.Range("a2:c500").Value = ""
-    shData.Range("a" & DayCount + 1).Value = DayCount
-    shData.Range("b" & DayCount + 1).Value = InfectionNumber + 1
-    shData.Range("c" & DayCount + 1).Value = InfectionNumber + 1
+    
+    shData.Range("a2:k1000").Value = ""
+    shData.Range("a" & DayCount + 2).Value = DayCount
+    shData.Range("b" & DayCount + 2).Value = 0
+    shData.Range("c" & DayCount + 2).Value = 0
+    shData.Range("d" & DayCount + 2).Value = 0
+    shData.Range("e" & DayCount + 2).Value = 0
+    shData.Range("f" & DayCount + 2).Value = 0
+    shData.Range("g" & DayCount + 2).Value = 0
+    shData.Range("h" & DayCount + 2).Value = 0
+    shData.Range("i" & DayCount + 2).Value = 0
+    shData.Range("j" & DayCount + 2).Value = 0
+    shData.Range("k" & DayCount + 2).Value = 0
+    
     shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
-    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = HealthyNumber + 1
-    shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
+    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = HealthyNumber
+    shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber
     shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
     shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = TotalBeds
     shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
+    shCity.Shapes("Coin").TextFrame2.TextRange.Characters.Text = totalCoins
     
     SetGameKeys
                                                                     
@@ -58,19 +102,31 @@ Public Sub InitialiseGame()
 End Sub
 Public Sub resetGame()
 
-    Set GameTimer = Nothing
-    Set Citizen = Nothing
-    Set Hospital = Nothing
-    shData.Range("a2:c500").Value = ""
+    TerminateGame
+    
+    shData.Range("a2:k1000").Value = ""
     shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = 0
-    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = citypopulation + 1
-    shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = 0
     shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = 0
     shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("NumberofRecovered").TextFrame2.TextRange.Characters.Text = 0
     shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = 0
-    shCity.Range("E195:to705").ClearFormats
-    Set Citizen = Nothing
-    Set Hospital = Nothing
+    shCity.Shapes("NumberofDeath").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("NumberofSick").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("Coin").TextFrame2.TextRange.Characters.Text = 0
+    
+    shCity.Shapes("DailyInfectionNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("DailyCureNumber").TextFrame2.TextRange.Characters.Text = 0
+    shCity.Shapes("DailyDeathNumber").TextFrame2.TextRange.Characters.Text = 0
+    
+
+    shCity.Shapes("InfectionBar2").Width = 1
+
+    shCity.Shapes("HospitalBar2").Width = 1
+    
+    shCity.Shapes("ProgressBar2").Width = 1
+
 
 End Sub
 
@@ -106,10 +162,12 @@ Public Sub TerminateGame()
 
 End Sub
 Public Sub updateanddraw()
-        Citizen.update
+        Citizen.updateMovement
         Citizen.CalculateInfection
+        Hospital.update
+        Hospital.updatePatient
         'Citizen.DrawPerson
-        shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
+        'shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
 End Sub
 Public Sub UpdateAndDrawGame()
 
@@ -123,7 +181,7 @@ Public Sub UpdateAndDrawGame()
     ProgressCount = ProgressCount + 1
     
     TimerCount = TimerCount + 1
-    Debug.Print ProgressCount, TimerCount
+    'Debug.Print ProgressCount, TimerCount
     
     
     If GetAsyncKeyState(vbKeyTab) <> 0 Then
@@ -136,50 +194,95 @@ Public Sub UpdateAndDrawGame()
     'Debug.Print TimerCount
     If TimerCount Mod 2 = 0 Then
         'DayCount = DayCount + 1
-        Citizen.update
+        Citizen.updateMovement
         Citizen.CalculateInfection
         'Citizen.DrawPerson
-        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
-        HealthyNumber = citypopulation - InfectionNumber
-        shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = HealthyNumber + 1
-        shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
+        updateHalfDayFigures
+        
         updateBarCharts
+        
     End If
     
     If TimerCount Mod 4 = 0 Then
         DayCount = DayCount + 1
         'ProgressCount = ProgressCount + 1
-        shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
+
         Hospital.update
         Hospital.updatePatient
-        shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
-        shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = TotalBeds
-        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber + 1 - RecoveredPatient
-        shCity.Shapes("NumberofRecovered").TextFrame2.TextRange.Characters.Text = RecoveredPatient
-        shData.Range("a" & DayCount + 1).Value = DayCount
-        shData.Range("c" & DayCount + 1).Value = InfectionNumber + 1 - RecoveredPatient
-        shData.Range("b" & DayCount + 1).Value = InfectionNumber - shData.Range("c" & DayCount).Value + 1
         
-        If DayCount Mod 7 = 0 Then
-            PauseGame
-            ProgressCount = 0
-        End If
+        Citizen.calculateCoins
+
+        updateDailyFigures
+        updateBarCharts
+        
+        'If DayCount Mod PeriodofTurn = 0 Then
+        '    PauseGame
+        '    ProgressCount = 0
+        'End If
     End If
     
-    'If ProgressCount Mod 7 = 0 Then
-    '    ProgressCount = 0
-    'End If
+    If TimerCount Mod PeriodofTurn = 0 Then
     
-    
-    
-    'If TimerCount Mod 10 = 0 Then
-    '    shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
-    'End If
-    'If TimerCount Mod 20 = 0 Then
-    '    DayCount = DayCount + 1
-    '    shCity.Shapes(1).TextFrame2.TextRange.Characters.Text = DayCount
-    'End If
+        PauseGame
+        ProgressCount = 0
+    End If
 
+End Sub
+Sub updateDailyFigures()
+
+        shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
+        shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
+        shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = AvailableBeds
+        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber
+        shCity.Shapes("NumberofRecovered").TextFrame2.TextRange.Characters.Text = RecoveredPatient
+        shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
+        shCity.Shapes("NumberofDeath").TextFrame2.TextRange.Characters.Text = DeathNumber
+        shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = citypopulation - InfectionNumber + RecoveredPatient
+        shCity.Shapes("NumberofSick").TextFrame2.TextRange.Characters.Text = SickNumber
+        shCity.Shapes("Coin").TextFrame2.TextRange.Characters.Text = totalCoins
+        
+        shData.Range("a" & DayCount + 2).Value = DayCount
+        shData.Range("b" & DayCount + 2).Value = InfectionNumber - shData.Range("c" & DayCount + 1).Value
+        shData.Range("c" & DayCount + 2).Value = InfectionNumber
+        shData.Range("d" & DayCount + 2).Value = SickNumber - shData.Range("e" & DayCount + 1).Value
+        shData.Range("e" & DayCount + 2).Value = SickNumber
+        shData.Range("f" & DayCount + 2).Value = ExposedNumber - shData.Range("g" & DayCount + 1).Value
+        shData.Range("g" & DayCount + 2).Value = ExposedNumber
+        shData.Range("h" & DayCount + 2).Value = DeathNumber - shData.Range("i" & DayCount + 1).Value
+        shData.Range("i" & DayCount + 2).Value = DeathNumber
+        shData.Range("j" & DayCount + 2).Value = RecoveredPatient - shData.Range("k" & DayCount + 1).Value
+        shData.Range("k" & DayCount + 2).Value = RecoveredPatient
+        
+        shCity.Shapes("DailyInfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber - shData.Range("c" & DayCount + 1).Value
+        shCity.Shapes("DailyCureNumber").TextFrame2.TextRange.Characters.Text = RecoveredPatient - shData.Range("k" & DayCount + 1).Value
+        shCity.Shapes("DailyDeathNumber").TextFrame2.TextRange.Characters.Text = DeathNumber - shData.Range("i" & DayCount + 1).Value
+        
+End Sub
+
+Sub updateHalfDayFigures()
+
+        'shCity.Shapes("DayNumber").TextFrame2.TextRange.Characters.Text = DayCount
+        'shCity.Shapes("NumberinHospital").TextFrame2.TextRange.Characters.Text = PatientNumber
+        'shCity.Shapes("NumberofBeds").TextFrame2.TextRange.Characters.Text = AvailableBeds
+        shCity.Shapes("InfectionNumber").TextFrame2.TextRange.Characters.Text = InfectionNumber
+        'shCity.Shapes("NumberofRecovered").TextFrame2.TextRange.Characters.Text = RecoveredPatient
+        shCity.Shapes("ExposureNumber").TextFrame2.TextRange.Characters.Text = ExposedNumber
+        shCity.Shapes("NumberofDeath").TextFrame2.TextRange.Characters.Text = DeathNumber
+        shCity.Shapes("HealthyNumber").TextFrame2.TextRange.Characters.Text = citypopulation - InfectionNumber + RecoveredPatient
+        shCity.Shapes("NumberofSick").TextFrame2.TextRange.Characters.Text = SickNumber
+        
+        'shData.Range("a" & DayCount + 2).Value = DayCount
+        'shData.Range("b" & DayCount + 2).Value = InfectionNumber - shData.Range("c" & DayCount + 1).Value
+        'shData.Range("c" & DayCount + 2).Value = InfectionNumber
+        'shData.Range("d" & DayCount + 2).Value = SickNumber - shData.Range("e" & DayCount + 1).Value
+        'shData.Range("e" & DayCount + 2).Value = SickNumber
+        'shData.Range("f" & DayCount + 2).Value = ExposedNumber - shData.Range("g" & DayCount + 1).Value
+        'shData.Range("g" & DayCount + 2).Value = ExposedNumber
+        'shData.Range("h" & DayCount + 2).Value = NumberofDeath - shData.Range("i" & DayCount + 1).Value
+        'shData.Range("i" & DayCount + 2).Value = NumberofDeath
+        'shData.Range("j" & DayCount + 2).Value = RecoveredPatient - shData.Range("k" & DayCount + 1).Value
+        'shData.Range("k" & DayCount + 2).Value = RecoveredPatient
+        
 End Sub
 Sub updateBarCharts()
     Dim barLength As Integer
@@ -189,14 +292,14 @@ Sub updateBarCharts()
     Percentage = InfectionNumber / citypopulation
     shCity.Shapes("InfectionBar2").Width = CInt(Percentage * shCity.Shapes("InfectionBar1").Width)
     
+    Percentage = PatientNumber / TotalBeds
+    shCity.Shapes("HospitalBar2").Width = CInt(Percentage * shCity.Shapes("HospitalBar1").Width)
+    
     Percentage = ProgressCount / PeriodofTurn
     label = CStr(Format(Percentage, "0%"))
     shCity.Shapes("ProgressBar1").TextFrame2.TextRange.Characters.Text = label
     shCity.Shapes("ProgressBar2").Width = CInt(Percentage * shCity.Shapes("ProgressBar1").Width)
-    
-    
-    'shCity.Shapes("InfectionBar1").Width = 400
-    'Debug.Print shCity.Shapes("InfectionBar1").Width
+
 End Sub
 Sub updatebar()
     shCity.Shapes("InfectionBar1").Width = 600
@@ -317,7 +420,14 @@ End Sub
 
 Sub testrandom()
     Dim x As Double
-    x = Int(Abs(RandNorm(0, 1) * 28))
+    Dim y As Double
+    y = 0.99
+    
+    x = y + RandNorm(0, 1)
     Debug.Print x
     
+End Sub
+Sub testcooling()
+AVGShadowTime = Range("AVGShadowTime").Value * 4
+Debug.Print AVGShadowTime, Int(Abs(RandNorm(0, 1) * AVGShadowTime))
 End Sub
