@@ -28,45 +28,64 @@ Option Explicit
 Public Type PersonType
     PositionX As Integer
     PositionY As Integer
-    'PreviousPositionX As Integer
-    'previousPositionY As Integer
     Status As Integer
+    'Status:0 Healthy, Status:1 Exposed, Status:2 Sick, Status: 3 in hospital, Status: 4 Recovered, Status: 5 Death
     InfectedStartTime As Integer
     CoolingPeriod As Integer
     MoveIntention As Single
     RecoverPeriod As Integer
     InHospitalDay As Integer
-    
+    DeathPeriod As Integer
+    LocationGroup() As Integer
 End Type
 
-Public Const CityPopulation As Integer = 3999
 
-Public Const CityStartX As Integer = 25
-Public Const CityEndX As Integer = 525
-Public Const CityStartY As Integer = 200
-Public Const CityEndY As Integer = 700
-Public Const firstPatch As Integer = 5
-Public Const SafeDist As Single = 2
-Public Const HospitalReactionDay As Integer = 2
-Public Const AVGShadowTime As Integer = 28
-Public Const AVGCureTime As Integer = 84
+
+Public citypopulation As Long
+Public CityStartX As Long
+Public CityEndX As Long
+Public CityStartY As Long
+Public CityEndY As Long
+Public firstPatch As Long
+Public SafeDist As Single
+Public HospitalReactionDay As Integer
+Public AVGShadowTime As Integer
+Public AVGCureTime As Integer
+Public PeriodofTurn As Integer
+Public AVGDeathTime As Integer
+Public DeathRate As Single
 
 Public MoveIntention As Single
 Public ChanceofInfection As Single
 Public TimerCount As Long
 Public DayCount As Long
-Public InfectionNumber As Integer
+Public InfectionNumber As Long
+Public SickPersonNumber As Long
 Public Persons() As PersonType
-Public InfectedPersonsID() As Integer
-Public ExposedPersonsID() As Integer
-Public InHospitalPersonsID() As Integer
-Public ExposedNumber As Integer
-Public PatientNumber As Integer
+Public InfectedPersonsID() As Long
+Public ExposedPersonsID() As Long
+Public InHospitalPersonsID() As Long
+Public ExposedNumber As Long
+Public PatientNumber As Long
 Public IncubationPeriod As Integer
-Public DailyInfectionNumber() As Integer
-Public HealthyNumber As Integer
-Public TotalBeds As Integer
-Public RecoveredPatient As Integer
+Public DailyInfectionNumber() As Long
+Public HealthyNumber As Long
+Public DeathNumber As Long
+Public SickNumber As Long
+Public TotalBeds As Long
+Public RecoveredPatient As Long
+Public ProgressCount As Long
+Public AvailableBeds As Long
+Public startCoins As Long
+Public totalCoins As Long
+Public CoinsPerPersonGenerated As Long
+Public CostPerPatient As Long
+Public CostofHospital As Long
+Public CostofVacine As Long
+Public PaceLength As Long
+Public LocationGroup() As Long
+Public Dimension As Integer
+Public HospitalDailyLimit As Integer
 
 Public Enum GameColour
 
@@ -75,14 +94,10 @@ Public Enum GameColour
     gcSkyBlue = 13408512
     gcGrassGreen = 32768
     gcBlack = 1
-    'gcHealth = 41
     gcInfected = 44
     gcSick = 3
-    'gcHealth = 8
     gcHealth = 20
     gcInfectionBar = 22
-    'gcInfected = 36
-    'gcSick = 22
 
 End Enum
 
@@ -90,22 +105,3 @@ Public Function RandNorm(meanVal As Double, Stdev As Double)
     RandNorm = WorksheetFunction.NormInv(Rnd, meanVal, Stdev)
 End Function
 
-
-Sub testdist()
-    Dim x As Single
-    Dim y As Single
-    Dim d As Single
-    Dim UX As Integer
-    Dim UY As Integer
-    Dim IX As Integer
-    Dim IY As Integer
-    UX = 243
-    UY = 646
-    IX = 288
-    IY = 9798
-    x = (UX - IX) ^ 2
-    y = (UY - IY) ^ 2
-    d = Sqr(x + y)
-    Debug.Print d
-    
-End Sub
