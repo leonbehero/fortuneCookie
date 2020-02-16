@@ -5,9 +5,6 @@ Private Const beds As Integer = 100
 Private Const dailyLimit As Integer = 50
 Private StartTime As Integer
 
-
-
-
 Private Sub Class_Initialize()
 
     TotalBeds = 0
@@ -25,16 +22,14 @@ Public Sub update()
 
     Dim i As Integer
     Dim x As Integer
-    'Dim usdbeds As Integer
-    
     Dim n As Integer
     
     If TimerCount - StartTime < HospitalReactionDay Or AvailableBeds = 0 Then
         Exit Sub
     End If
-    'usdbeds = 0
-    If dailyLimit <= AvailableBeds Then
-        n = dailyLimit
+
+    If HospitalDailyLimit <= AvailableBeds Then
+        n = HospitalDailyLimit
     Else
         n = AvailableBeds
     End If
@@ -51,9 +46,6 @@ Public Sub update()
             End If
         Next
     Next
-    
-    'TotalBeds = TotalBeds - usdbeds
-    'AvailableBeds = AvailableBeds - usdbeds
     
 End Sub
 
@@ -75,3 +67,4 @@ Public Sub updatePatient()
     Next
     
 End Sub
+
