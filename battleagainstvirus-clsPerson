@@ -1,43 +1,63 @@
 Option Explicit
 
 Private Sub Class_Initialize()
-    'store info about bird image
+
     PersonBirth
     InitiliseInfection
-    MoveIntention = Range("moveintention").Value
-    ChanceofInfection = Range("chanceofinfection").Value
     
-    
+
 End Sub
+
 
 Private Sub PersonBirth()
 
-    Dim x As Integer
-    x = citypopulation - 1
-
-    ReDim Preserve Persons(0 To x)
+    Dim x As Long
+    Dim dx As Long
+    Dim dy As Long
+    Dim dz As Long
+    Dim dd As Long
+    Dim i As Long
+    Dim foundSpace As Boolean
     
-    For x = 0 To citypopulation - 1
+    ReDim Preserve Persons(1 To citypopulation)
+
+    For x = 1 To citypopulation
 
         Persons(x).PositionX = Int((CityEndX - CityStartX + 1) * Rnd + CityStartX)
         Persons(x).PositionY = Int((CityEndY - CityStartY + 1) * Rnd + CityStartY)
         Persons(x).Status = 0
+        dx = Persons(x).PositionX \ PaceLength
+        dy = Persons(x).PositionX \ PaceLength
+        dd = dx * dy
 
-        'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+        foundSpace = False
+        For i = 0 To UBound(LocationGroup, 2)
+            If LocationGroup(dd, i) = 0 Then
+                LocationGroup(dd, i) = x
+                foundSpace = True
+                Exit For
+            End If
+        Next
+        
+        If foundSpace = False Then
+            dz = UBound(LocationGroup, 2) + 1
+            ReDim Preserve LocationGroup(0 To Dimension, 0 To dz)
+            LocationGroup(dd, dz) = x
+        End If
     Next
     
 End Sub
 Private Sub InitiliseInfection()
     
-    Dim i As Integer
-    Dim x As Integer
+    Dim i As Long
+    Dim x As Long
     Dim DeathRate As Integer
     
     For i = 0 To firstPatch - 1
-    'Debug.Print i
+
         ReDim Preserve InfectedPersonsID(0 To i)
         Do
-            x = Int((citypopulation - 0 + 1) * Rnd + 1)
+            x = Int((citypopulation - 1 + 1) * Rnd + 1)
             
         Loop While Persons(x).Status = 1
 
@@ -45,9 +65,7 @@ Private Sub InitiliseInfection()
         Persons(x).Status = 1
         ExposedNumber = ExposedNumber + 1
         Persons(x).InfectedStartTime = TimerCount
-        'Debug.Print "cooling perid", getCoolingPeriod
         Persons(x).CoolingPeriod = getCoolingPeriod
-        'Debug.Print "death perid", getDeathPeriod
         Persons(x).DeathPeriod = getDeathPeriod
 
         InfectedPersonsID(i) = x
@@ -60,27 +78,77 @@ End Sub
 
 Public Sub updateMovement()
 
-    Dim x As Integer
+    Dim x As Long, i As Long
     Dim UX As Integer
     Dim UY As Integer
+    Dim dd As Integer, ddd As Integer
+    Dim dx As Integer, ddx As Integer, ddy As Integer
+    Dim dy As Integer
+    Dim dz As Integer
+    Dim foundSpace As Integer
     
-    For x = 0 To citypopulation - 1
-        If getRandomMoveintention Or Persons(x).Status <> 3 Or Persons(x).Status <> 4 Or Persons(x).Status <> 5 Then
-            'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).ClearFormats
-            'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX).ClearFormats
-            'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX + 1).ClearFormats
-            'shCity.Cells(Persons(x).PositionY + 1, Persons(x).PositionX + 1).ClearFormats
+    For x = 1 To citypopulation
+        If getRandomMoveintention And (Persons(x).Status <> 3 Or Persons(x).Status <> 4 Or Persons(x).Status <> 5) Then
+
             UX = Persons(x).PositionX
             UY = Persons(x).PositionY
+            ddx = UX \ PaceLength
+            ddy = UY \ PaceLength
+            ddd = ddx * ddy
             Do
                 Persons(x).PositionX = UX
                 Persons(x).PositionY = UY
-                Persons(x).PositionX = Persons(x).PositionX + Int(RandNorm(0, 1) * 10)
-                Persons(x).PositionY = Persons(x).PositionY + Int(RandNorm(0, 1) * 10)
+                Persons(x).PositionX = Persons(x).PositionX + Int(RandNorm(0, 1) * PaceLength)
+                Persons(x).PositionY = Persons(x).PositionY + Int(RandNorm(0, 1) * PaceLength)
             Loop While DetectingCollisionWall(Persons(x).PositionX, Persons(x).PositionY)
+            
+            If ddx <> Persons(x).PositionX \ PaceLength Or ddy <> Persons(x).PositionY \ PaceLength Then
+                dx = Persons(x).PositionX \ PaceLength
+                dy = Persons(x).PositionY \ PaceLength
+                dd = dx * dy
+                For i = 0 To UBound(LocationGroup, 2)
+                    If LocationGroup(ddd, i) = x Then
+                        LocationGroup(ddd, i) = 0
+                    End If
+                Next
+                foundSpace = False
+                For i = 0 To UBound(LocationGroup, 2)
+                    If LocationGroup(dd, i) = 0 Then
+                    LocationGroup(dd, i) = x
+                    foundSpace = True
+                    Exit For
+                End If
+                Next
+        
+                If foundSpace = False Then
+                    dz = UBound(LocationGroup, 2) + 1
+                    ReDim Preserve LocationGroup(0 To Dimension, 0 To dz)
+                    LocationGroup(dd, dz) = x
+                End If
+            End If
+            
         End If
-        'shCity.Cells(Persons(x).PositionY, Persons(x).PositionX).Interior.Color = GameColour.gcGrassGreen
+        
     Next
+End Sub
+
+Private Sub RemoveItem(arr, d, v)
+    Dim rv(), i As Long, n As Long
+
+    n = 0
+    For i = 0 To UBound(arr, 2)
+        If arr(d, i) = v Then
+            arr(d, i) = 0
+        End If
+    Next
+
+    n = n - 1
+    
+    ReDim Preserve arr(0 To Dimension, 0 To n)
+    For i = 0 To UBound(rv, 2)
+        arr(d, i) = rv(0, i)
+    Next
+    
 End Sub
 Private Function getRandomMoveintention() As Boolean
     If RandNorm(0, 1) + MoveIntention > 0 Then
@@ -98,52 +166,58 @@ Private Function getChanceofInfection() As Boolean
 End Function
 Public Sub CalculateInfection()
 
-    Dim i As Integer
-    Dim x As Integer
+    Dim i As Long
+    Dim x As Long
+    Dim dx As Integer
+    Dim dy As Integer
+    Dim dd As Integer
     Dim d As Double
-    'n = UBound(InfectedPersonsID)
-    For i = 0 To citypopulation - 1
-        'Debug.Print "stats", Persons(i).Status
+    Dim id As Long
+
+    For i = 1 To citypopulation
+
         If Persons(i).Status = 0 Then
             If getChanceofInfection Then
-                For x = 0 To InfectionNumber - 1
-                    If Persons(InfectedPersonsID(x)).Status = 1 Or Persons(InfectedPersonsID(x)).Status = 2 Then
-                        'Debug.Print InfectionNumber, Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY
-                        d = GetDistant(Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY)
-                        'Debug.Print "distant:", InfectionNumber, d, Persons(i).PositionX, Persons(i).PositionY, Persons(InfectedPersonsID(x)).PositionX, Persons(InfectedPersonsID(x)).PositionY
-                        If d < SafeDist Then
-                            'Debug.Print d
-                            Persons(i).Status = 1
-                            Persons(i).InfectedStartTime = TimerCount
-                            Persons(i).CoolingPeriod = getCoolingPeriod
-                            
-                            Persons(i).DeathPeriod = getDeathPeriod
+                dx = Persons(i).PositionX \ PaceLength
+                dy = Persons(i).PositionX \ PaceLength
+                dd = dx * dy
 
-                           ' Debug.Print "infection number: ", InfectionNumber
-                            ReDim Preserve InfectedPersonsID(0 To InfectionNumber)
-                            'Debug.Print i, UBound(InfectedPersonsID)
-                            InfectedPersonsID(InfectionNumber) = i
-                            ExposedNumber = ExposedNumber + 1
+                For x = 0 To UBound(LocationGroup, 2)
+                    id = LocationGroup(dd, x)
 
-                            InfectionNumber = InfectionNumber + 1
+                    If id <> 0 Then
+                        If Persons(id).Status = 1 Or Persons(id).Status = 2 Then
                             
-                            Exit For
+                            d = GetDistant(Persons(i).PositionX, Persons(i).PositionY, Persons(id).PositionX, Persons(id).PositionY)
+                            If d < SafeDist Then
+                                Persons(i).Status = 1
+                                Persons(i).InfectedStartTime = TimerCount
+                                Persons(i).CoolingPeriod = getCoolingPeriod
+                                Persons(i).DeathPeriod = getDeathPeriod
+    
+                                ReDim Preserve InfectedPersonsID(0 To InfectionNumber)
+
+                                InfectedPersonsID(InfectionNumber) = i
+                                ExposedNumber = ExposedNumber + 1
+    
+                                InfectionNumber = InfectionNumber + 1
+                                
+                                Exit For
+                            End If
                         End If
                     End If
                 Next
             End If
         End If
     Next
-'Debug.Print "infection number: ", InfectionNumber, UBound(InfectedPersonsID)
+
     If InfectionNumber > 0 Then
         For i = 0 To InfectionNumber - 1
             If Persons(InfectedPersonsID(i)).Status = 1 Then
 
-                'Debug.Print InfectionNumber, Persons(InfectedPersonsID(i)).Status, Persons(InfectedPersonsID(i)).InfectedStartTime, Persons(InfectedPersonsID(i)).CoolingPeriod
                 If TimerCount - Persons(InfectedPersonsID(i)).InfectedStartTime >= Persons(InfectedPersonsID(i)).CoolingPeriod Then
                     Persons(InfectedPersonsID(i)).Status = 2
                     ExposedNumber = ExposedNumber - 1
-                    'Debug.Print "Exposed number: ", ExposedNumber, Persons(InfectedPersonsID(i)).CoolingPeriod, TimerCount, Persons(InfectedPersonsID(i)).InfectedStartTime
                     SickNumber = SickNumber + 1
                 End If
             End If
@@ -151,7 +225,7 @@ Public Sub CalculateInfection()
         
         For i = 0 To InfectionNumber - 1
             If Persons(InfectedPersonsID(i)).Status = 1 Or Persons(InfectedPersonsID(i)).Status = 2 Or Persons(InfectedPersonsID(i)).Status = 3 Then
-               ' Debug.Print InfectionNumber, Persons(InfectedPersonsID(i)).Status, Persons(InfectedPersonsID(i)).InfectedStartTime, Persons(InfectedPersonsID(i)).DeathPeriod
+
                 If TimerCount - Persons(InfectedPersonsID(i)).InfectedStartTime >= Persons(InfectedPersonsID(i)).DeathPeriod Then
     
                     Select Case Persons(InfectedPersonsID(i)).Status
@@ -252,9 +326,7 @@ Public Sub DrawPerson()
 
 End Sub
 
-Sub testdistant()
-    
-End Sub
+
 Private Function GetDistant(UX As Integer, UY As Integer, IX As Integer, IY As Integer) As Single
     Dim x As Single
     Dim y As Single
@@ -267,19 +339,11 @@ End Function
 
 
 Public Function DetectingCollision() As Boolean
-    'If shGame.Cells(Snake(0).PositionX, Snake(0).PositionY).Interior.Color = GameColour.gcBlack Then
-    '    DetectingCollision = True
-    'Else
-    '    DetectingCollision = False
-    'End If
+
 End Function
 
 Private Function DetectingCollisionWall(UX As Integer, UY As Integer) As Boolean
-    'If shGame.Cells(Snake(0).PositionX, Snake(0).PositionY).Interior.Color = GameColour.gcBlack Then
-    '    DetectingCollision = True
-    'Else
-    '    DetectingCollision = False
-    'End If
+
     If UX < CityStartX Or UX > CityEndX Or UY < CityStartY Or UY > CityEndY Then
         DetectingCollisionWall = True
     Else
@@ -287,18 +351,4 @@ Private Function DetectingCollisionWall(UX As Integer, UY As Integer) As Boolean
     End If
     
 End Function
-
-'Public Property Set GameSheet(Value As clsGameSheet)
-
-'    Set pGameSheet = Value
-    
-'    Set BirdCell = _
-'    pGameSheet.GameRange.Cells(Int(pGameSheet.GameHeight / 2), 40)
-    
-'    BirdImage.Copy BirdCell
-    
-'    Set FloorRange = pGameSheet.FloorRange.Cells(1, 1)
-
-'End Property
-
 
